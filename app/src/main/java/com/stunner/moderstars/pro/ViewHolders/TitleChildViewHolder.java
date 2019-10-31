@@ -5,6 +5,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.bignerdranch.expandablerecyclerview.ViewHolder.ChildViewHolder;
+import com.stunner.moderstars.pro.Adapters.MyAdapter;
 
 import java.io.File;
 
@@ -19,16 +20,28 @@ public class TitleChildViewHolder extends ChildViewHolder {
         checkBox1 = itemView.findViewById(R.id.checkBox1);
         option1 = itemView.findViewById(R.id.option1);
     }
-    
+
     public String getparent(){
         File fld = new File(Environment.getExternalStorageDirectory() + "/Mods");
         for (File x:fld.listFiles())
         {
-           for (String e: x.list())
-           {
-               if (e.equals(option1.toString())) return x.toString();
+            for (String e: x.list())
+            {
+                if (e.equals(option1.toString())) return x.toString();
 
-           }
+            }
+        }
+        return null;
+    }
+    
+    public TitleParentViewHolder getparentvh(){
+        for (TitleParentViewHolder d: MyAdapter.parentvh)
+        {
+            File fld = new File(Environment.getExternalStorageDirectory() +"/Mods/"+ d._textView.toString());
+            for (String x: fld.list())
+            {
+                if (option1.toString().equals(x)) return d;
+            }
         }
         return null;
     }
