@@ -1,5 +1,4 @@
 package com.stunner.moderstars.pro.ViewHolders;
-import android.os.Environment;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -7,14 +6,18 @@ import android.widget.TextView;
 import com.bignerdranch.expandablerecyclerview.ViewHolder.ChildViewHolder;
 import com.stunner.moderstars.pro.Adapters.MyAdapter;
 
+
 import java.io.File;
 
 import stunner.moderstars.R;
 
+import static com.stunner.moderstars.ActivityPro.ctx;
+
+
 public class TitleChildViewHolder extends ChildViewHolder {
     public TextView option1;
     public CheckBox checkBox1;
-    //public int modnum;
+    public int count =0;
     public TitleChildViewHolder(View itemView) {
         super(itemView);
         checkBox1 = itemView.findViewById(R.id.checkBox1);
@@ -22,25 +25,25 @@ public class TitleChildViewHolder extends ChildViewHolder {
     }
 
     public String getparent(){
-        File fld = new File(Environment.getExternalStorageDirectory() + "/Mods");
-        for (File x:fld.listFiles())
-        {
-            for (String e: x.list())
-            {
-                if (e.equals(option1.toString())) return x.toString();
+        for (TitleParentViewHolder d: MyAdapter.parentvh)
+        {                String s = d._textView.getText().toString();
 
+            File fld = new File(ctx.getExternalFilesDir(null) +"/Mods/"+ option1.getText().toString());
+            for (String x: fld.list())
+            {
+                if (option1.getText().toString().equals(x)) return x;
             }
         }
         return null;
     }
-    
+
     public TitleParentViewHolder getparentvh(){
         for (TitleParentViewHolder d: MyAdapter.parentvh)
         {
-            File fld = new File(Environment.getExternalStorageDirectory() +"/Mods/"+ d._textView.toString());
+            File fld = new File(ctx.getExternalFilesDir(null) +"/Mods/"+d._textView.getText().toString());
             for (String x: fld.list())
             {
-                if (option1.toString().equals(x)) return d;
+                if (option1.getText().toString().equals(x)) return d;
             }
         }
         return null;

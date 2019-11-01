@@ -8,7 +8,6 @@
     android:layout_height="match_parent"
 
     tools:context="com.stunner.moderstars.ActivityPro">
-
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
         android:layout_width="match_parent"
