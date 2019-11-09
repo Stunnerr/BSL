@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_about" >О программе</string>
+    <string name="action_settings">Настройки</string>
+    <string name="getting_root">Получение root-доступа…</string>
+    <string name="starting">Запуск…</string>
+</resources>
