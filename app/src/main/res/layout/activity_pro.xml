@@ -6,29 +6,42 @@
     android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context="com.stunner.moderstars.ActivityPro">
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        ads:adSize="SMART_BANNER"
-        ads:adUnitId="@string/test_ad"
-        app:layout_constraintBottom_toBottomOf="@id/linearLayout" />
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintRight_toRightOf="@id/linearLayout"
-        app:layout_constraintBottom_toTopOf="@id/adView"
-        android:layout_margin="24dp"
-        ads:srcCompat="@drawable/ic_sharp_add" />
+        app:layout_constraintBottom_toTopOf="@id/framead"
+        android:layout_margin="32dp"
+        ads:src="@drawable/ic_sharp_add" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginBottom="5dp"
         app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintBottom_toTopOf="@id/framead"
+        >
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <FrameLayout
+        app:layout_constraintBottom_toBottomOf="@id/linearLayout"
+        android:id="@+id/framead"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            ads:adSize="SMART_BANNER"
+            ads:adUnitId="@string/test_ad"
+            app:layout_constraintBottom_toBottomOf="@id/linearLayout" />
+
+    </FrameLayout>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
