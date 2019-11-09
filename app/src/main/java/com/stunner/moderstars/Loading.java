@@ -31,11 +31,11 @@ public class Loading extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean root) {
             if (root) {
-                text.setText("Запуск...");
+                text.setText(R.string.starting);
                 Intent intent = new Intent(getApplicationContext(), ActivityPro.class);
                 startActivity(intent);
             }
-            else System.exit(1);
+            else finishActivity(1);
         }
     }
     String tag = "Brawl Mods";
@@ -56,7 +56,7 @@ public class Loading extends AppCompatActivity {
 
     boolean Getroot(final int att) {
         try {
-            Log.i(tag, "Trying to get root attemp " + att);
+            Log.i(tag, "Trying to get root attempt " + att);
             Process process = Runtime.getRuntime().exec(new String[]{"su","id"});
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
             DataInputStream osRes = new DataInputStream(process.getInputStream());
@@ -89,7 +89,7 @@ public class Loading extends AppCompatActivity {
                             .setNegativeButton("Нет",
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
-                                            System.exit(0);
+                                            finishActivity(1);
                                         }
                                     });
                     AlertDialog alert = builder.create();
@@ -97,7 +97,7 @@ public class Loading extends AppCompatActivity {
 
                 } else {
                     Log.e(tag, "Can't get root access");
-                    System.exit(0);
+                    finishActivity(1);
                 }
 
             }

@@ -3,8 +3,8 @@ package com.stunner.moderstars.pro.Models;
 import com.stunner.moderstars.pro.ViewHolders.TitleChildViewHolder;
 
 public class TitleChild {
-    TitleChildViewHolder curholder;
-    public String option1;
+    private TitleChildViewHolder curholder;
+    private String option1;
     public String path;
     public TitleChild(String path) {
         this.option1 = path.split("/")[path.split("/").length-1];
