@@ -7,6 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.stunner.moderstars.ActivityPro">
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
@@ -15,7 +16,6 @@
         app:layout_constraintBottom_toTopOf="@id/framead"
         android:layout_margin="32dp"
         ads:src="@drawable/ic_sharp_add" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"

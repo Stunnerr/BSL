@@ -5,5 +5,9 @@
         <item name="colorAccent">#0091EA</item>
         <item name="colorPrimary">#0091EA</item>
     </style>
+    <style name="AppTheme.Loading" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorAccent">#0091EA</item>
+        <item name="colorPrimary">#0091EA</item>
+    </style>
 
 </resources>
