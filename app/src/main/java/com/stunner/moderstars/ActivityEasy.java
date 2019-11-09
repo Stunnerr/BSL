@@ -3,9 +3,7 @@ package com.stunner.moderstars;
 
 import android.app.Activity;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -24,28 +22,14 @@ import android.widget.TextView;
 
 public class ActivityEasy extends Activity {
 
-    /**
-     * The {@link androidx.viewpager.widget.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * androidx.fragment.app.FragmentStatePagerAdapter.
-     */
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_easy);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-
         mSectionsPagerAdapter = new SectionsPagerAdapter(new FragmentActivity().getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
@@ -107,7 +91,7 @@ public class ActivityEasy extends Activity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_easy, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+            TextView textView = rootView.findViewById(R.id.section_label);
             textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }

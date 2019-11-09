@@ -22,16 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, TitleChildViewHolder> {
-    TitleParent title;
-    LayoutInflater inflater;
-    List<Boolean> checked = new ArrayList<>();
-    List<Integer> parents = new ArrayList<>();
-    List<Integer> lastchildren = new ArrayList<>();
-    List<TitleParentViewHolder> parentvh = new ArrayList<>();
-    List<TitleChildViewHolder> childvh = new ArrayList<>();
 
-    public List<List<String>> folders = new ArrayList<>();
-    public List<String> files = new ArrayList<>();
+    LayoutInflater inflater;
+    public static List<Object> checked = new ArrayList<>();
 
     public MyAdapter(Context context, List<ParentObject> parentItemList) {
         super(context, parentItemList);
@@ -52,60 +45,38 @@ public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, 
     }
 
     @Override
-    public void onBindParentViewHolder(TitleParentViewHolder holder, final int i, Object o) {
-        title = (TitleParent) o;
-
-        parents.add(i);
-        parentvh.add(holder);
+    public void onBindParentViewHolder(final TitleParentViewHolder holder, final int i,final Object o) {
+        final TitleParent title = (TitleParent) o;
+        title.setCurholder(holder);
         Log.i(ActivityPro.tag,"parent id:" +String.valueOf(i)+ " name:" + title.getTitle() + " obj:" + o.toString());
-        if (checked.size()<i+1) checked.add(i,false);
         holder._textView.setText(title.getTitle());
-
-        holder._checkBox.setChecked(checked.get(i));
+        holder._checkBox.setChecked(checked.indexOf(title)!=-1);
         holder._checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checked.set(i,!checked.get(i));
-                for(int x=i;x<childvh.size();x++) {
-                    checked.set(x, checked.get(i));
-                    childvh.get(x).checkBox1.setChecked(checked.get(i));
-                }
+                if (checked.indexOf(title)!=-1) checked.add(title);
+                else checked.remove(title);
+
             }}
         );
     }
 
 
     @Override
-    public void onBindChildViewHolder(TitleChildViewHolder holder, final int i, Object o) {
-        TitleChild title = (TitleChild) o;
-        final boolean[] d={false};
-        childvh.add(holder);
-        Log.i(ActivityPro.tag,"child id:" +String.valueOf(i)+ " name:" + title.getOption1() + " obj:" + o.toString() + " Holder:" + holder.toString());
-        final int[] parent={0};
-        for (int x = 0;x<lastchildren.size();x++) {
-            if (i>=x) {parent[0]=x;break;}
-        }
-        if (checked.size() < i+1) checked.add(false);
-        if (checked.get(parent[0]))holder.checkBox1.setChecked(true);
-        else holder.checkBox1.setChecked(checked.get(i));
+    public void onBindChildViewHolder(final TitleChildViewHolder holder, final int i, final Object o) {
+        final TitleChild title = (TitleChild) o;
+        final boolean[] d = {false};
+        title.setCurholder(holder);
         holder.option1.setText(title.getOption1());
+        Log.i(ActivityPro.tag, "child id:" + String.valueOf(i) + " name:" + title.getOption1() + " obj:" + o.toString() + " Holder:" + holder.toString());
+        holder.checkBox1.setChecked(checked.indexOf(title)!=-1);
         holder.checkBox1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (checked.get(parent[0]))
-                {
-                    parentvh.get(parent[0])._checkBox.setChecked(false);
-                    checked.set(parent[0],false);
-                    checked.set(i,!checked.get(i));
-                }
-                else {
-                    checked.set(i,!checked.get(i));
-                    for (int x = parent[0]+1; x < checked.size(); x++){
-                    if (checked.get(x)) d[0]=true;
-                    else {d[0]=false;break;}
-                }
-                if(d[0]) {parentvh.get(parent[0])._checkBox.setChecked(true); checked.set(parent[0],true);}
-                }
+                if (checked.indexOf(title) != -1)
+                    checked.add(title);
+                else checked.remove(title);
+
             }
         });
     }
@@ -118,7 +89,4 @@ public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, 
 
 
 
-    public List<Boolean> getChecked() {
-        return checked;
-    }
 }
