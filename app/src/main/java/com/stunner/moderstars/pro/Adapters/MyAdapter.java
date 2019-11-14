@@ -53,14 +53,30 @@ public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, 
         Log.i(ActivityPro.tag,"parent id:" +String.valueOf(i)+ " name:" + title.getTitle() + " obj:" + o.toString());
         holder._textView.setText(title.getTitle());
         holder._checkBox.setChecked(checked.indexOf(title)!=-1);
-        holder._checkBox.setOnClickListener(new View.OnClickListener() {
+        holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View v) {
-                if (checked.indexOf(title)!=-1) {
+            public boolean onLongClick(View v) {
+                if (checked.indexOf(title)==-1) {
+                    holder._checkBox.setChecked(true);
                     checked.add(title);
                     for (Object x:title.getChildObjectList()) {
                         TitleChild child = (TitleChild) x;
-                        child.getCurholder().checkBox1.setChecked(true);
+                        if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
+                        checked.add(child);
+                    }
+                }
+                else {holder._checkBox.setChecked(false);checked.remove(title);}
+                return true;
+            }}
+        );
+        holder._checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checked.indexOf(title)==-1) {
+                    checked.add(title);
+                    for (Object x:title.getChildObjectList()) {
+                        TitleChild child = (TitleChild) x;
+                        if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
                         checked.add(child);
                     }
                 }
@@ -76,15 +92,40 @@ public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, 
         final TitleChild title = (TitleChild) o;
         final boolean[] d = {false};
         final TitleParent[] parent = {null};
-        for (TitleParent x: parents) if(x.getChildObjectList().indexOf(title)!=0) parent[0]=x;
+        for (TitleParent x: parents) {if(x.getChildObjectList().indexOf(title)!=-1) {parent[0]=x;break;}}
         title.setCurholder(holder);
         holder.option1.setText(title.getOption1());
         Log.i(ActivityPro.tag, "child id:" + String.valueOf(i) + " name:" + title.getOption1() + " obj:" + o.toString() + " Holder:" + holder.toString());
         holder.checkBox1.setChecked(checked.indexOf(title)!=-1);
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checked.indexOf(title) == -1)
+                {
+                    holder.checkBox1.setChecked(true);
+                    checked.add(title);
+                    for (Object x:parent[0].getChildObjectList()){
+                        TitleChild child = (TitleChild) x;
+                        if (checked.indexOf(child)!=-1)d[0]=true;
+                        else  {d[0]=false;break;}
+                    }
+                    if (d[0]) {parent[0].getCurholder()._checkBox.setChecked(true);checked.add(parent[0]);}
+
+                }
+                else {
+                    holder.checkBox1.setChecked(false);
+                    checked.remove(title);
+                    if (checked.indexOf(parent[0])!=-1){
+                        checked.remove(parent[0]);
+                        parent[0].getCurholder()._checkBox.setChecked(false);
+                    }
+                }
+            }
+        });
         holder.checkBox1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (checked.indexOf(title) != -1)
+                if (checked.indexOf(title) == -1)
                 {
                     checked.add(title);
                     for (Object x:parent[0].getChildObjectList()){
