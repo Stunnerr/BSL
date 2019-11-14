@@ -2,29 +2,36 @@ package com.stunner.moderstars;
 
 import androidx.annotation.NonNull;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Environment;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.stunner.moderstars.pro.Models.TitleChild;
 import com.stunner.moderstars.pro.Models.TitleParent;
 
 import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,7 +48,52 @@ import stunner.moderstars.R;
 import com.stunner.moderstars.pro.Adapters.MyAdapter;
 import static com.stunner.moderstars.pro.Adapters.MyAdapter.checked;
 
-public class ActivityPro extends Activity {
+public class ActivityPro extends AppCompatActivity {
+
+    class Deploy extends AsyncTask<Void,Void,Void>{
+
+        ProgressDialog pd;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pd = new ProgressDialog(ActivityPro.ctx);
+            pd.setTitle("Brawl Mods");
+            pd.setMessage("Установка...");
+            pd.setCancelable(false);
+            pd.setCanceledOnTouchOutside(false);
+            pd.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                Process process = Runtime.getRuntime().exec("su");
+                DataOutputStream os = new DataOutputStream(process.getOutputStream());
+                DataInputStream is = new DataInputStream(process.getInputStream());
+                for (Object x : checked) {
+                    if (x.getClass().equals(TitleChild.class)) {
+                        String e = ActivityPro.ctx.getFilesDir().toString()+"com.supercell.brawlstars/test"+((TitleChild)x).path.split("/files/Mods")[1];
+                        new File(e).mkdirs();
+                        os.writeBytes("touch " + e + "\n\r");
+                        os.writeBytes("cat "+((TitleChild) x).path + " >> " + e + "\n\r");
+                        //((TitleChild) x).path;
+                        os.flush();
+                    }
+
+                }
+            }
+            catch (Exception e) {e.printStackTrace();}
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            pd.cancel();
+        }
+    }
+
+
     RecyclerView recyclerView;
     public static String tag = "Brawl Mods";
     ProgressDialog pd;
@@ -57,11 +109,42 @@ public class ActivityPro extends Activity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_activity_pro, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_about_pro:
+
+                break;
+
+            case R.id.action_settings_pro:
+                startActivity(new Intent(this,ActivityAbout.class));
+                break;
+
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pro);
-
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.app_name);
+        }
+        toolbar.inflateMenu(R.menu.menu_activity_pro);
         MobileAds.initialize(this);
+        /*AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);*/
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,9 +152,22 @@ public class ActivityPro extends Activity {
                 Choosezip();
             }
         });
-        AdView mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        if (initData() != null) {
+            fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deploy();
+                }
+            });
+
+            MyAdapter adapter = new MyAdapter(this, initData());
+            adapter.setParentClickableViewAnimationDefaultDuration();
+            adapter.setParentAndIconExpandOnClick(true);
+            recyclerView.setAdapter(adapter);
+        }
 
     }
 
@@ -114,50 +210,16 @@ public class ActivityPro extends Activity {
     protected void onResume() {
         ctx=this;
         super.onResume();
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Choosezip();
-            }
-        });
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        if (initData() != null) {
-            fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deploy();
-                }
-            });
-            MyAdapter adapter = new MyAdapter(this, initData());
-            adapter.setParentClickableViewAnimationDefaultDuration();
-            adapter.setParentAndIconExpandOnClick(true);
-            recyclerView.setAdapter(adapter);
-        }
+
     }
 //TODO: установка мода
     private void deploy() {
-        pd = new ProgressDialog(this);
-        pd.setTitle("Brawl Mods");
-        pd.setMessage("Установка...");
-        pd.setCancelable(false);
-        pd.show();
-        /*for (Object x: checked)
-        {
-            File temp = new File(x);
-
-                if (!temp.isDirectory())copyFile(x.replace(x.split("/")[x.split("/").length-1],""),x,getFilesDir().getPath().split(getPackageName())[0]+"com.supercell.brawlstars/update"+ x.split("/files/Mods")[1]);
-        }*/
-        pd.cancel();
     }
     public List<TitleParent> initParents(){
         List<TitleParent> parents = new ArrayList<>();
         for (File e:UsefulThings.checkmods(this)) parents.add(new TitleParent(e.toString()));
         return parents;
     }
-//TODO: переписать инициализацию
     private List<ParentObject> initData() {
         int modc;
         List<ParentObject> parentObject = new ArrayList<>();
@@ -189,20 +251,21 @@ public class ActivityPro extends Activity {
                     Log.d(tag, "File Uri: " + uri.toString());
                     String path = Environment.getExternalStorageDirectory().getPath() + uri.toString().replaceAll("%2F", "/").split("%3A")[uri.toString().split("%3A").length - 1];
                     Log.d(tag, "File Path: " + path);
+                    unzip(path);
                 }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 //TODO: доделать распаковку зип
-    private boolean unzip(String path, String zipname)
+    private boolean unzip(String path)
     {
         InputStream is;
         ZipInputStream zis;
         try
         {
             String filename;
-            is = new FileInputStream(path + zipname);
+            is = new FileInputStream(path);
             zis = new ZipInputStream(new BufferedInputStream(is));
             ZipEntry ze;
             byte[] buffer = new byte[1024];
