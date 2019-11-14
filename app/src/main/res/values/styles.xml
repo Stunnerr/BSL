@@ -1,13 +1,13 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorAccent">#0091EA</item>
         <item name="colorPrimary">#0091EA</item>
     </style>
-    <style name="AppTheme.Loading" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorAccent">#0091EA</item>
-        <item name="colorPrimary">#0091EA</item>
+    <style name="Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">?android:attr/listDivider</item>
     </style>
-
 </resources>
