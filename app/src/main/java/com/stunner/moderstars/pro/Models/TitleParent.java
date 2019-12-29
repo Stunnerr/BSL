@@ -1,9 +1,9 @@
 package com.stunner.moderstars.pro.Models;
-import java.util.List;
-import java.util.UUID;
-
 import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
 import com.stunner.moderstars.pro.ViewHolders.TitleParentViewHolder;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Created by reale on 23/11/2016.
@@ -12,17 +12,15 @@ import com.stunner.moderstars.pro.ViewHolders.TitleParentViewHolder;
 public class TitleParent implements ParentObject {
 
     private List<Object> mChildrenList;
-    TitleParentViewHolder curholder;
-    private UUID _id;
+    private TitleParentViewHolder curholder;
     private String title;
-    private String path;
-    public TitleParent(String path) {
-        this.title = path.split("/")[path.split("/").length-1];
+    private File path;
+    public TitleParent(File path) {
+        this.title = path.toString().split("/")[path.toString().split("/").length-1];
         this.path = path;
-        _id = UUID.randomUUID();
     }
 
-    public String getPath() {
+    public File getPath() {
         return path;
     }
 
@@ -46,5 +44,8 @@ public class TitleParent implements ParentObject {
     @Override
     public void setChildObjectList(List<Object> list) {
         mChildrenList = list;
+    }
+    public String getforcopy(){
+        return path.getAbsolutePath().split("com.stunner.moderstars/files/Mods" )[path.toString().split("com.stunner.moderstars/files").length-1];
     }
 }
