@@ -2,10 +2,16 @@ package com.stunner.moderstars;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import stunner.moderstars.R;
+
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -63,7 +69,6 @@ public class Loading extends AppCompatActivity {
             os.writeBytes("id\n");
             os.flush();
             Thread.sleep(400);
-            Log.d(tag, "Write \"id\"");
             boolean root = osRes.readLine().contains("uid=0");
             if (root) {
                 Log.i(tag, "Rooted!");
