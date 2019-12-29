@@ -50,7 +50,7 @@ public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, 
         final TitleParent title = (TitleParent) o;
         title.setCurholder(holder);
         parents.add(title);
-        Log.i(ActivityPro.tag,"parent id:" +String.valueOf(i)+ " name:" + title.getTitle() + " obj:" + o.toString());
+        //Log.i(ActivityPro.tag,"parent id:" +String.valueOf(i)+ " name:" + title.getTitle() + " obj:" + o.toString());
         holder._textView.setText(title.getTitle());
         holder._checkBox.setChecked(checked.indexOf(title)!=-1);
         holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
@@ -95,7 +95,7 @@ public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, 
         for (TitleParent x: parents) {if(x.getChildObjectList().indexOf(title)!=-1) {parent[0]=x;break;}}
         title.setCurholder(holder);
         holder.option1.setText(title.getOption1());
-        Log.i(ActivityPro.tag, "child id:" + String.valueOf(i) + " name:" + title.getOption1() + " obj:" + o.toString() + " Holder:" + holder.toString());
+        //Log.i(ActivityPro.tag, "child id:" + String.valueOf(i) + " name:" + title.getOption1() + " obj:" + o.toString() + " Holder:" + holder.toString());
         holder.checkBox1.setChecked(checked.indexOf(title)!=-1);
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
