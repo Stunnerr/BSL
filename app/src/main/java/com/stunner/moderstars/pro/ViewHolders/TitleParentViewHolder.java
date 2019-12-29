@@ -14,7 +14,6 @@ public class TitleParentViewHolder extends ParentViewHolder {
     public TextView _textView;
     public CheckBox _checkBox;
     public RelativeLayout layout;
-    private List<Integer> ids;
     public TitleParentViewHolder(View itemView) {
         super(itemView);
         _textView = itemView.findViewById(R.id.parentTitle);
