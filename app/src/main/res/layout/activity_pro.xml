@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/pro_root">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
@@ -12,8 +13,8 @@
         android:layout_height="wrap_content">
 
         <androidx.appcompat.widget.Toolbar
-            android:layout_width="match_parent"
             android:id="@+id/toolbar"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             ads:layout_scrollFlags="scroll|enterAlways|snap"
             ads:menu="@menu/menu_activity_pro"
@@ -38,16 +39,15 @@
 
         </androidx.recyclerview.widget.RecyclerView>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
-        style="@style/AppTheme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="32dp"
-        android:src="@drawable/ic_sharp_add"
         android:layout_gravity="bottom|end"
-        ads:rippleColor="@color/AccentColor"
-        />
+        android:layout_margin="32dp"
+        ads:backgroundTint="@color/AccentColor"
+        android:src="@drawable/ic_sharp_add" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

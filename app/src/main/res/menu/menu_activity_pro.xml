@@ -9,8 +9,14 @@
         app:showAsAction="never"
         android:title="@string/action_settings" />
     <item
+        android:id="@+id/action_add_pro"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        android:title="@string/addmod" />
+    <item
         android:id="@+id/action_about_pro"
         android:orderInCategory="100"
         app:showAsAction="never"
         android:title="@string/action_about" />
+
 </menu>
