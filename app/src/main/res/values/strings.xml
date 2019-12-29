@@ -6,4 +6,8 @@
     <string name="section_format" translatable="false">Hello World from section: %1$d</string>
     <string name="getting_root">Gathering root access…</string>
     <string name="starting">Starting…</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="addmod">Add mod</string>
+    <string name="clear">Clear cached mods?</string>
 </resources>
