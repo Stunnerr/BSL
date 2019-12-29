@@ -1,22 +1,17 @@
 package com.stunner.moderstars;
 
-import androidx.annotation.NonNull;
-
-import android.app.ActionBar;
-import android.app.Activity;
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Environment;
+import android.text.LoginFilter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,33 +19,37 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.stunner.moderstars.pro.Adapters.MyAdapter;
 import com.stunner.moderstars.pro.Models.TitleChild;
 import com.stunner.moderstars.pro.Models.TitleParent;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import stunner.moderstars.R;
 
-import com.stunner.moderstars.pro.Adapters.MyAdapter;
+import static com.stunner.moderstars.UsefulThings.Unzip;
+import static com.stunner.moderstars.UsefulThings.bspath;
+import static com.stunner.moderstars.UsefulThings.copy;
+import static com.stunner.moderstars.UsefulThings.sudo;
 import static com.stunner.moderstars.pro.Adapters.MyAdapter.checked;
 
-public class ActivityPro extends AppCompatActivity {
 
-    class Deploy extends AsyncTask<Void,Void,Void>{
+public class ActivityPro extends AppCompatActivity {
+int perms = 0;
+ class Deploy extends AsyncTask<Void,Void,Void> {
+
 
         ProgressDialog pd;
         @Override
@@ -66,46 +65,90 @@ public class ActivityPro extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            try {
-                Process process = Runtime.getRuntime().exec("su");
-                DataOutputStream os = new DataOutputStream(process.getOutputStream());
-                DataInputStream is = new DataInputStream(process.getInputStream());
-                for (Object x : checked) {
-                    if (x.getClass().equals(TitleChild.class)) {
-                        String e = ActivityPro.ctx.getFilesDir().toString()+"com.supercell.brawlstars/test"+((TitleChild)x).path.split("/files/Mods")[1];
-                        new File(e).mkdirs();
-                        os.writeBytes("touch " + e + "\n\r");
-                        os.writeBytes("cat "+((TitleChild) x).path + " >> " + e + "\n\r");
-                        //((TitleChild) x).path;
-                        os.flush();
-                    }
-
+            for (Object o:checked){
+                if (o.getClass().equals(TitleParent.class)){
+                    TitleParent x = (TitleParent) o;
+                    Log.d(tag,x.getforcopy());
+                    try{sudo("mkdir -p "+(bspath+"dkoskd"+ x.getforcopy()));}
+                    catch(IOException e ) {Snackbar.make(findViewById(R.id.recyclerView), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);}
                 }
+
+                else
+                if (o.getClass().equals(TitleChild.class)){
+                    TitleChild x = (TitleChild) o;
+                    x.getPath().mkdirs();
+                    Log.d(tag,bspath + "dkoskd" + x.getforcopy());
+                    try{copy(x.getPath(), new File(bspath + "dkoskd" + x.getforcopy()));}
+                    catch (IOException e) {
+                        Snackbar.make(findViewById(R.id.recyclerView), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);
+                    }
+                }
+
+
             }
-            catch (Exception e) {e.printStackTrace();}
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            pd.cancel();
+            pd.dismiss();
         }
     }
 
-
+    FloatingActionButton fab;
     RecyclerView recyclerView;
     public static String tag = "Brawl Mods";
-    ProgressDialog pd;
+    //public String modspath = getExternalFilesDir("")+"/Mods/test";
     public static Context ctx;
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+    private void requestAppPermissions() {
+        if (hasReadPermissions() && hasWritePermissions()) {
+            return;
+        }
+        ActivityCompat.requestPermissions(this,
+                new String[] {
+                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
+                },1 ); // your request code
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+    }
+    public boolean granted(int[] results)
+    {
+        for (int a: results) {
+            if(a!= PackageManager.PERMISSION_GRANTED)return false;
+
+        }
+        return true;
     }
 
+    private boolean hasReadPermissions() {
+        return (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+    }
+
+    private boolean hasWritePermissions() {
+        return (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+    }
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch(requestCode){
+            case 1:
+                if(granted(grantResults))
+                {}
+                else {if(perms<5){requestAppPermissions(); perms++;}
+                else System.exit(1);}
+                break;
+            case 2:
+
+                if(granted(grantResults))
+                {}
+                else {if(perms<5){requestAppPermissions(); perms++;}
+                else System.exit(1);}
+                break;
+            default:
+                break;
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -119,6 +162,8 @@ public class ActivityPro extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_about_pro:
+                Snackbar.make(findViewById(R.id.pro_root), "Some text", Snackbar.LENGTH_SHORT).show();
+
 
                 break;
 
@@ -126,7 +171,10 @@ public class ActivityPro extends AppCompatActivity {
                 startActivity(new Intent(this,ActivityAbout.class));
                 break;
 
+            case R.id.action_add_pro:
 
+                Choosezip();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -134,6 +182,7 @@ public class ActivityPro extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestAppPermissions();
         setContentView(R.layout.activity_pro);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -141,11 +190,10 @@ public class ActivityPro extends AppCompatActivity {
             getSupportActionBar().setTitle(R.string.app_name);
         }
         toolbar.inflateMenu(R.menu.menu_activity_pro);
-        MobileAds.initialize(this);
-        /*AdView mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);*/
-        FloatingActionButton fab = findViewById(R.id.fab);
+        bspath = getFilesDir().getAbsolutePath().split(getPackageName())[0] +"com.supercell.brawlstars/";
+        //Log.d(tag, bspath);
+        fab = findViewById(R.id.fab);
+        fab.setBackgroundColor(getResources().getColor(R.color.AccentColor));
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,10 +207,14 @@ public class ActivityPro extends AppCompatActivity {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //
                     deploy();
+                    Snackbar.make(findViewById(R.id.recyclerView
+                    ), "Some text", Snackbar.LENGTH_SHORT).setDuration(900).show();
+                    //Log.d(tag,getFilesDir().getPath() + "/com.supercell.brawlstars/dkoskd");
+
                 }
             });
-
             MyAdapter adapter = new MyAdapter(this, initData());
             adapter.setParentClickableViewAnimationDefaultDuration();
             adapter.setParentAndIconExpandOnClick(true);
@@ -171,53 +223,43 @@ public class ActivityPro extends AppCompatActivity {
 
     }
 
-    private void copyFile(String inputPath, String inputFile, String outputPath) {
 
-        InputStream in = null;
-        OutputStream out = null;
-        try {
-
-            //create output directory if it doesn't exist
-            File dir = new File (outputPath);
-            if (!dir.exists())
-            {
-                dir.mkdirs();
-            }
-
-
-            in = new FileInputStream(inputPath + inputFile);
-            out = new FileOutputStream(outputPath + inputFile);
-
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
-            }
-            in.close();
-            // write the output file (You have now copied the file)
-            out.flush();
-            out.close();
-
-        }  catch (FileNotFoundException fnfe1) {
-            Log.e("tag", fnfe1.getMessage());
-        }
-        catch (Exception e) {
-            Log.e("tag", e.getMessage());
-        }
-
-    }
     @Override
     protected void onResume() {
         ctx=this;
+        requestAppPermissions();
         super.onResume();
 
     }
 //TODO: установка мода
     private void deploy() {
+        for (Object o:checked){
+            if (o.getClass().equals(TitleParent.class)){
+                TitleParent x = (TitleParent) o;
+                //Log.d(tag,x.getforcopy());
+                try{sudo("mkdir -p "+(bspath+"update"+ x.getforcopy()));}
+                catch(IOException e ) {Snackbar.make(findViewById(R.id.recyclerView), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);}
+            }
+
+            else
+            if (o.getClass().equals(TitleChild.class)){
+                TitleChild x = (TitleChild) o;
+                x.getPath().mkdirs();
+                //Log.d(tag,bspath + "dkoskd" + x.getforcopy());
+                try{copy(x.getPath(), new File(bspath + "update" + x.getforcopy()));}
+                catch (IOException e) {
+                    Snackbar.make(findViewById(R.id.recyclerView), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);
+                }
+            }
+
+
+        }
+
     }
+
     public List<TitleParent> initParents(){
         List<TitleParent> parents = new ArrayList<>();
-        for (File e:UsefulThings.checkmods(this)) parents.add(new TitleParent(e.toString()));
+        for (File e:UsefulThings.checkmods(this)) parents.add(new TitleParent(e));
         return parents;
     }
     private List<ParentObject> initData() {
@@ -229,11 +271,13 @@ public class ActivityPro extends AppCompatActivity {
                 List<TitleParent> parents = initParents();
                 for (int i = 0; i < modc; i++) {
                     List<Object> childList = new ArrayList<>();
+                    if (UsefulThings.filelist(this, UsefulThings.checkmods(this)[i]) != null){
                         for (File file : UsefulThings.filelist(this, UsefulThings.checkmods(this)[i])) {//список файлов
-                            if ((file.toString().endsWith(".csv")) || (file.toString().endsWith(".sc")) || (file.toString().endsWith(".scw")) || (file.toString().endsWith(".ogg"))) {//Проверка файла
-                                childList.add(new TitleChild(file.toString()));
+                            if ((file.toString().endsWith(".csv")) || (file.toString().endsWith(".sc")) || (file.toString().endsWith(".scw")) || (file.toString().endsWith(".ogg") || (file.toString().endsWith(".ktx")))) {//Проверка файла
+                                childList.add(new TitleChild(file));
                             }
                         }
+                    }
                     parents.get(i).setChildObjectList(childList);
                     parentObject.add(parents.get(i));
 
@@ -241,65 +285,58 @@ public class ActivityPro extends AppCompatActivity {
             return parentObject;
         } else return null;
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case 0:
+            case 13:
                 if (resultCode == RESULT_OK) {
                     Uri uri = data.getData();
                     Log.d(tag, "File Uri: " + uri.toString());
-                    String path = Environment.getExternalStorageDirectory().getPath() + uri.toString().replaceAll("%2F", "/").split("%3A")[uri.toString().split("%3A").length - 1];
+                    String path = Environment.getExternalStorageDirectory().getPath() +'/'+ uri.toString().replaceAll("%2F", "/").split("%3A")[uri.toString().split("%3A").length - 1];
                     Log.d(tag, "File Path: " + path);
-                    unzip(path);
+                    AlertDialog dialog = new AlertDialog.Builder(this).create();
+                    dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            try {
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                        }
+                    });
+                    dialog.setTitle(R.string.app_name); dialog.setMessage(getString(R.string.clear));
+                    dialog.show();
+                    Unzip(path);
+                    if (initData() !=null){
+                    MyAdapter adapter = new MyAdapter(this, initData());
+                    adapter.setParentClickableViewAnimationDefaultDuration();
+                    adapter.setParentAndIconExpandOnClick(true);
+                    recyclerView.setAdapter(adapter);
+                        fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
+                        fab.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //
+                                deploy();
+                                Snackbar.make(findViewById(R.id.recyclerView
+                                ), "Some text", Snackbar.LENGTH_SHORT).setDuration(900).show();
+                               // Log.d(tag,getFilesDir().getPath() + "/com.supercell.brawlstars");
+
+                            }
+                        });
+                }
+
                 }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-//TODO: доделать распаковку зип
-    private boolean unzip(String path)
-    {
-        InputStream is;
-        ZipInputStream zis;
-        try
-        {
-            String filename;
-            is = new FileInputStream(path);
-            zis = new ZipInputStream(new BufferedInputStream(is));
-            ZipEntry ze;
-            byte[] buffer = new byte[1024];
-            int count;
-
-            while ((ze = zis.getNextEntry()) != null)
-            {
-                filename = ze.getName();
-                if (ze.isDirectory()) {
-                    File fmd = new File(getExternalFilesDir(null).toString() + "/Mods/" + new File(getExternalFilesDir(null) + "/Mods").listFiles().length);
-                    fmd.mkdirs();
-                    continue;
-                }
-
-                FileOutputStream fout = new FileOutputStream(getExternalFilesDir(null).toString() + "/Mods/" + new File(getExternalFilesDir(null) + "/Mods").listFiles().length + filename);
-
-                while ((count = zis.read(buffer)) != -1)
-                {
-                    fout.write(buffer, 0, count);
-                }
-
-                fout.close();
-                zis.closeEntry();
-            }
-
-            zis.close();
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-
-        return true;
     }
     private void Choosezip() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -309,7 +346,7 @@ public class ActivityPro extends AppCompatActivity {
         try {
             startActivityForResult(
                     Intent.createChooser(intent, "Выберите архив мода"),
-                    0);
+                    13);
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "Установите файловый менеджер!",
                     Toast.LENGTH_SHORT).show();
