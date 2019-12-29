@@ -191,9 +191,7 @@ int perms = 0;
         }
         toolbar.inflateMenu(R.menu.menu_activity_pro);
         bspath = getFilesDir().getAbsolutePath().split(getPackageName())[0] +"com.supercell.brawlstars/";
-        //Log.d(tag, bspath);
         fab = findViewById(R.id.fab);
-        fab.setBackgroundColor(getResources().getColor(R.color.AccentColor));
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -211,7 +209,6 @@ int perms = 0;
                     deploy();
                     Snackbar.make(findViewById(R.id.recyclerView
                     ), "Some text", Snackbar.LENGTH_SHORT).setDuration(900).show();
-                    //Log.d(tag,getFilesDir().getPath() + "/com.supercell.brawlstars/dkoskd");
 
                 }
             });
