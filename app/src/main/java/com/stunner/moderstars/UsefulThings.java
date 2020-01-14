@@ -18,7 +18,7 @@ import java.util.zip.ZipFile;
 import androidx.annotation.Nullable;
 
 import static com.stunner.moderstars.ActivityPro.ctx;
-import static com.stunner.moderstars.ActivityPro.tag;
+import static com.stunner.moderstars.ActivityPro.TAG;
 
 public class UsefulThings {
     static String bspath;
@@ -27,6 +27,23 @@ public class UsefulThings {
         Arrays.sort(files);
         return files;
 
+}
+    static String trimsome(String s){
+        Log.d(TAG, s);
+        String s1 = s.split("/csv_logic/")[0];
+        s1 =s1.split("/badge/")[0];
+        s1 =s1.split("/csv_client/")[0];
+        s1 =s1.split("/fonts/")[0];
+        s1 =s1.split("/font/")[0];
+        s1 =s1.split("/image/")[0];
+        s1 =s1.split("/localization/")[0];
+        s1 =s1.split("/music/")[0];
+        s1 =s1.split("/sc/")[0];
+        s1 =s1.split("/sc3d/")[0];
+        s1 =s1.split("/sfx/")[0];
+        s1 =s1.split("/shader/")[0];
+        s1 =s1.split("/titan/")[0];
+        return s1.endsWith("/")?(s1):(s1+"/");
     }
     static void Unzip(String str) {
         try {
@@ -36,10 +53,12 @@ public class UsefulThings {
             Enumeration entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() +"/Mods/" + zipEntry.getName()).replace("/update", ""));
+                //Log.d(TAG,"Trimmed: /" + trimsome(zipEntry.getName()));
+                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() +"/Mods//" + zipEntry.getName()).replace("/" + trimsome(zipEntry.getName()), ""));
+               // Log.d(TAG, file2.toString());
                 file2.getParentFile().mkdirs();
                 if (!zipEntry.isDirectory()) {
-                    Log.d("Brawl Mods","Extracting " + file2);
+                    Log.d(TAG,"Extracting " + file2);
                     BufferedInputStream bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                     byte[] bArr = new byte[1024];
                     BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file2), 1024);
@@ -56,7 +75,7 @@ public class UsefulThings {
                 }
             }
         } catch (Exception e) {
-            Log.e(tag,"Error :" + e);
+            Log.e(TAG,"Error :" + e);
         }
     }
 
@@ -65,9 +84,9 @@ public class UsefulThings {
         return new DataInputStream(Runtime.getRuntime().exec("su -c " +cmd).getInputStream()).readLine();
     }
     static void copy(File src, File dst) throws IOException {
-        //Log.d(tag, "src: " + src.getAbsolutePath() + " dst: " + dst.getAbsolutePath());
+        //Log.d(TAG, "src: " + src.getAbsolutePath() + " dst: " + dst.getAbsolutePath());
         DataInputStream process = new DataInputStream(Runtime.getRuntime().exec("su -c cp -r " +src.getAbsolutePath()+" "+dst.getAbsolutePath()+ "").getInputStream());
-        //Log.d(tag, "copy out:"+process.readLine());
+        //Log.d(TAG, "copy out:"+process.readLine());
     }
 
     public static File[] checkmods(Context context, int modn){
