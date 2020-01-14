@@ -1,23 +1,16 @@
 package com.stunner.moderstars;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import stunner.moderstars.R;
-
-import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+
+import androidx.appcompat.app.AppCompatActivity;
+import stunner.moderstars.R;
 public class Loading extends AppCompatActivity {
     TextView text;
     private class MyTask extends AsyncTask <Boolean, Boolean, Boolean> {
@@ -25,7 +18,7 @@ public class Loading extends AppCompatActivity {
         protected Boolean doInBackground(Boolean... root) {
             root[0] = false;
             try{
-                root[0] = Getroot(1);
+                root[0] = Getroot(false);
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -60,51 +53,28 @@ public class Loading extends AppCompatActivity {
 
     }
 
-    boolean Getroot(final int att) {
+    boolean Getroot(final boolean att) {
         try {
-            Log.i(tag, "Trying to get root attempt " + att);
-            Process process = Runtime.getRuntime().exec(new String[]{"su","id"});
+            Process process = Runtime.getRuntime().exec("su");
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
             DataInputStream osRes = new DataInputStream(process.getInputStream());
-            os.writeBytes("id\n");
+            os.writeBytes("id -u\n");
             os.flush();
             Thread.sleep(400);
-            boolean root = osRes.readLine().contains("uid=0");
+            boolean root = false;
+            try{ root= osRes.readLine().equals("0");}
+            catch (Exception e){System.exit(1);}
             if (root) {
                 Log.i(tag, "Rooted!");
-                return root;
+                return true;
 
             } else {
                 Log.w(tag, "Root access rejected");
-                if (att <= 5) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Brawl Mods")
-                            .setMessage("Не удалось получить права root! Повторить попытку?")
-                            .setCancelable(false)
-                            .setPositiveButton("Да", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    try {
-                                        Getroot(1 + att);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            })
-                            .setNegativeButton("Нет",
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            finishActivity(1);
-                                        }
-                                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-
-                } else {
+                if(att)Getroot(true);
+                else {
                     Log.e(tag, "Can't get root access");
-                    finishActivity(1);
+                    System.exit(1);
                 }
-
             }
         } catch (Exception e) {
             Log.e(tag,e.toString());
