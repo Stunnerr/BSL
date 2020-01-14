@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.LoginFilter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -68,7 +67,7 @@ int perms = 0;
             for (Object o:checked){
                 if (o.getClass().equals(TitleParent.class)){
                     TitleParent x = (TitleParent) o;
-                    Log.d(tag,x.getforcopy());
+                    Log.d(TAG,x.getforcopy());
                     try{sudo("mkdir -p "+(bspath+"dkoskd"+ x.getforcopy()));}
                     catch(IOException e ) {Snackbar.make(findViewById(R.id.recyclerView), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);}
                 }
@@ -77,7 +76,7 @@ int perms = 0;
                 if (o.getClass().equals(TitleChild.class)){
                     TitleChild x = (TitleChild) o;
                     x.getPath().mkdirs();
-                    Log.d(tag,bspath + "dkoskd" + x.getforcopy());
+                    Log.d(TAG,bspath + "dkoskd" + x.getforcopy());
                     try{copy(x.getPath(), new File(bspath + "dkoskd" + x.getforcopy()));}
                     catch (IOException e) {
                         Snackbar.make(findViewById(R.id.recyclerView), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);
@@ -98,7 +97,7 @@ int perms = 0;
 
     FloatingActionButton fab;
     RecyclerView recyclerView;
-    public static String tag = "Brawl Mods";
+    public static String TAG = "Brawl Mods";
     //public String modspath = getExternalFilesDir("")+"/Mods/test";
     public static Context ctx;
 
@@ -207,9 +206,6 @@ int perms = 0;
                 public void onClick(View v) {
                     //
                     deploy();
-                    Snackbar.make(findViewById(R.id.recyclerView
-                    ), "Some text", Snackbar.LENGTH_SHORT).setDuration(900).show();
-
                 }
             });
             MyAdapter adapter = new MyAdapter(this, initData());
@@ -228,12 +224,11 @@ int perms = 0;
         super.onResume();
 
     }
-//TODO: установка мода
     private void deploy() {
         for (Object o:checked){
             if (o.getClass().equals(TitleParent.class)){
                 TitleParent x = (TitleParent) o;
-                //Log.d(tag,x.getforcopy());
+                //Log.d(TAG,x.getforcopy());
                 try{sudo("mkdir -p "+(bspath+"update"+ x.getforcopy()));}
                 catch(IOException e ) {Snackbar.make(findViewById(R.id.recyclerView), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);}
             }
@@ -242,7 +237,7 @@ int perms = 0;
             if (o.getClass().equals(TitleChild.class)){
                 TitleChild x = (TitleChild) o;
                 x.getPath().mkdirs();
-                //Log.d(tag,bspath + "dkoskd" + x.getforcopy());
+                //Log.d(TAG,bspath + "dkoskd" + x.getforcopy());
                 try{copy(x.getPath(), new File(bspath + "update" + x.getforcopy()));}
                 catch (IOException e) {
                     Snackbar.make(findViewById(R.id.recyclerView), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);
@@ -270,11 +265,11 @@ int perms = 0;
                     List<Object> childList = new ArrayList<>();
                     if (UsefulThings.filelist(this, UsefulThings.checkmods(this)[i]) != null){
                         for (File file : UsefulThings.filelist(this, UsefulThings.checkmods(this)[i])) {//список файлов
-                            if ((file.toString().endsWith(".csv")) || (file.toString().endsWith(".sc")) || (file.toString().endsWith(".scw")) || (file.toString().endsWith(".ogg") || (file.toString().endsWith(".ktx")))) {//Проверка файла
                                 childList.add(new TitleChild(file));
-                            }
+
                         }
                     }
+                    if(childList.isEmpty()) childList.add("Это папка");
                     parents.get(i).setChildObjectList(childList);
                     parentObject.add(parents.get(i));
 
@@ -288,28 +283,9 @@ int perms = 0;
             case 13:
                 if (resultCode == RESULT_OK) {
                     Uri uri = data.getData();
-                    Log.d(tag, "File Uri: " + uri.toString());
-                    String path = Environment.getExternalStorageDirectory().getPath() +'/'+ uri.toString().replaceAll("%2F", "/").split("%3A")[uri.toString().split("%3A").length - 1];
-                    Log.d(tag, "File Path: " + path);
-                    AlertDialog dialog = new AlertDialog.Builder(this).create();
-                    dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            try {
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                        }
-                    });
-                    dialog.setTitle(R.string.app_name); dialog.setMessage(getString(R.string.clear));
-                    dialog.show();
+                    Log.d(TAG, "File Uri: " + uri.toString());
+                    String path = Environment.getExternalStorageDirectory().getPath() +'/'+ uri.toString().replaceAll("%2F", "/").split(Environment.getExternalStorageDirectory().getPath())[uri.toString().split(Environment.getExternalStorageDirectory().getPath()).length - 1];
+                    Log.d(TAG, "File Path: " + path);
                     Unzip(path);
                     if (initData() !=null){
                     MyAdapter adapter = new MyAdapter(this, initData());
@@ -323,8 +299,8 @@ int perms = 0;
                                 //
                                 deploy();
                                 Snackbar.make(findViewById(R.id.recyclerView
-                                ), "Some text", Snackbar.LENGTH_SHORT).setDuration(900).show();
-                               // Log.d(tag,getFilesDir().getPath() + "/com.supercell.brawlstars");
+                                ), R.string.success, Snackbar.LENGTH_SHORT).setDuration(900).show();
+                               // Log.d(TAG,getFilesDir().getPath() + "/com.supercell.brawlstars");
 
                             }
                         });
