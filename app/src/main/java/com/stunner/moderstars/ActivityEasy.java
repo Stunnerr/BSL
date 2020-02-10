@@ -1,41 +1,66 @@
 package com.stunner.moderstars;
 
 
-import android.app.Activity;
 
-import androidx.fragment.app.FragmentActivity;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 import stunner.moderstars.R;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.widget.TextView;
+import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
+import com.stunner.moderstars.pro.Adapters.RecyclerViewAdapter;
+import com.stunner.moderstars.pro.Models.ListChild;
+import com.stunner.moderstars.pro.Models.ListParent;
 
-public class ActivityEasy extends Activity {
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.stunner.moderstars.UsefulThings.TAG;
+
+public class ActivityEasy extends AppCompatActivity {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
     private ViewPager mViewPager;
+    private TabLayout mTabLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_easy);
-        mSectionsPagerAdapter = new SectionsPagerAdapter(new FragmentActivity().getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar2));
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        mViewPager = findViewById(R.id.viewpager2);
+        mTabLayout = findViewById(R.id.tabs2);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
+        mTabLayout.setupWithViewPager(mViewPager);
+        FloatingActionButton fab = findViewById(R.id.fab2);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Snackbar.make(findViewById(R.id.fab2), "test", BaseTransientBottomBar.LENGTH_LONG).show();
+            }
+        });
 
     }
 
@@ -43,7 +68,7 @@ public class ActivityEasy extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_activity_easy, menu);
+        getMenuInflater().inflate(R.menu.menu_release, menu);
         return true;
     }
 
@@ -55,45 +80,75 @@ public class ActivityEasy extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings_easy) {
-            return true;
+        if (id == R.id.action_alpha) {
+            startActivity(new Intent(getApplicationContext(),ActivityPro.class));
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        public PlaceholderFragment() {
+    public static class TabsFragment extends Fragment {
+        private int mPage;
+        private static final String ARG_PAGE = "section_number";
+        RecyclerViewAdapter adapter;
+        public TabsFragment() {
         }
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
+        public static TabsFragment newInstance(int sectionNumber) {
+            Log.d(TAG, "newInstance: run");
+            TabsFragment fragment = new TabsFragment();
             Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            args.putInt(ARG_PAGE, sectionNumber);
             fragment.setArguments(args);
             return fragment;
         }
 
+        @Override public void onCreate(Bundle savedInstanceState) {
+            if (getArguments() != null) {
+                mPage = getArguments().getInt(ARG_PAGE);
+            }
+            super.onCreate(savedInstanceState);
+            adapter = new RecyclerViewAdapter(getContext(), initData(mPage));
+            adapter.setParentClickableViewAnimationDefaultDuration();
+            adapter.setParentAndIconExpandOnClick(true);
+        }
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_easy, container, false);
-            TextView textView = rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            RecyclerView recyclerView = rootView.findViewById(R.id.recyclerView2);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(adapter);
             return rootView;
+
+        }
+
+        List<ListParent> initParents(int modc){
+            List<ListParent> parents = new ArrayList<>();
+            for (File e:UsefulThings.checkmod(getContext(), modc)) parents.add(new ListParent(e, modc));
+            return parents;
+        }
+        private List<ParentObject> initData(int modc) {
+            int folc;
+            List<ParentObject> parentObject = new ArrayList<>();
+            folc = UsefulThings.checkmod(getContext(), modc).length-1;
+            if (folc != -1) {
+
+                List<ListParent> parents = initParents(modc);
+                for (int i = 0; i < folc; i++) {
+                    List<Object> childList = new ArrayList<>();
+                    if (UsefulThings.filelist(getContext(), UsefulThings.checkmod(getContext(), modc)[i]) != null){
+                        for (File file : UsefulThings.filelist(getContext(), UsefulThings.checkmod(getContext(), modc)[i])) {//список файлов
+                            childList.add(new ListChild(file, modc));
+
+                        }
+                    }
+                    if (childList.isEmpty()) childList.add("Это файл");
+                    parents.get(i).setChildObjectList(childList);
+                    parentObject.add(parents.get(i));
+
+                }
+                return parentObject;
+            } else return null;
         }
     }
 
@@ -110,27 +165,18 @@ public class ActivityEasy extends Activity {
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            // Return a TabsFragment (defined as a static inner class below).
+            return TabsFragment.newInstance(position + 1);
         }
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
-            return 3;
+            return UsefulThings.modcount(getApplicationContext());
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "SECTION 1";
-                case 1:
-                    return "SECTION 2";
-                case 2:
-                    return "SECTION 3";
-            }
-            return null;
+            return "Mod #"+ (position+1);
         }
     }
 }
