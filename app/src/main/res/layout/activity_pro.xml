@@ -17,28 +17,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             ads:layout_scrollFlags="scroll|enterAlways|snap"
-            ads:menu="@menu/menu_activity_pro"
+            ads:menu="@menu/menu_release"
             ads:title="@string/app_name">
 
         </androidx.appcompat.widget.Toolbar>
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            ads:tabMode="scrollable" />
     </com.google.android.material.appbar.AppBarLayout>
 
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/linearLayout"
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        ads:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context="com.stunner.moderstars.ActivityPro">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-        </androidx.recyclerview.widget.RecyclerView>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        ads:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
