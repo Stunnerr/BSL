@@ -1,6 +1,6 @@
 package com.stunner.moderstars.pro.Models;
 import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
-import com.stunner.moderstars.pro.ViewHolders.TitleParentViewHolder;
+import com.stunner.moderstars.pro.ViewHolders.ParentViewHolder;
 
 import java.io.File;
 import java.util.List;
@@ -9,26 +9,28 @@ import java.util.List;
  * Created by reale on 23/11/2016.
  */
 
-public class TitleParent implements ParentObject {
+public class ListParent implements ParentObject {
 
     private List<Object> mChildrenList;
-    private TitleParentViewHolder curholder;
+    private ParentViewHolder curholder;
     private String title;
     private File path;
-    public TitleParent(File path) {
+   private int modn;
+    public ListParent(File path, int modn) {
         this.title = path.toString().split("/")[path.toString().split("/").length-1];
         this.path = path;
+        this.modn= modn-1;
     }
 
     public File getPath() {
         return path;
     }
 
-    public void setCurholder(TitleParentViewHolder curholder) {
+    public void setCurholder(ParentViewHolder curholder) {
         this.curholder = curholder;
     }
 
-    public TitleParentViewHolder getCurholder() {
+    public ParentViewHolder getCurholder() {
         return curholder;
     }
 
@@ -46,6 +48,7 @@ public class TitleParent implements ParentObject {
         mChildrenList = list;
     }
     public String getforcopy(){
-        return path.getAbsolutePath().split("com.stunner.moderstars/files/Mods" )[path.toString().split("com.stunner.moderstars/files").length-1];
+        String p = "/"+path.getAbsolutePath().split("com.stunner.moderstars/files/Mods/" + modn+"/")[path.toString().split("com.stunner.moderstars/files/Mods/" + modn+"/").length-1];
+        return p;
     }
 }
