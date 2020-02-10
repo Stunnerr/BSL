@@ -3,17 +3,16 @@ package com.stunner.moderstars.pro.Adapters;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.stunner.moderstars.ActivityPro;
-import com.stunner.moderstars.pro.Models.TitleChild;
-import com.stunner.moderstars.pro.Models.TitleParent;
+import com.stunner.moderstars.UsefulThings;
+import com.stunner.moderstars.pro.Models.ListChild;
+import com.stunner.moderstars.pro.Models.ListParent;
 import stunner.moderstars.R;
-import com.stunner.moderstars.pro.ViewHolders.TitleChildViewHolder;
-import com.stunner.moderstars.pro.ViewHolders.TitleParentViewHolder;
+import com.stunner.moderstars.pro.ViewHolders.ChildViewHolder;
+import com.stunner.moderstars.pro.ViewHolders.ParentViewHolder;
 
 import com.bignerdranch.expandablerecyclerview.Adapter.ExpandableRecyclerAdapter;
 import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
@@ -21,66 +20,66 @@ import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, TitleChildViewHolder> {
+public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHolder, ChildViewHolder> {
 
     private LayoutInflater inflater;
-    public static List<Object> checked = new ArrayList<>();
-    private static List<TitleParent> parents = new ArrayList<>();
+    private static List<ListParent> parents = new ArrayList<>();
 
-    public MyAdapter(Context context, List<ParentObject> parentItemList) {
+    public RecyclerViewAdapter(Context context, List<ParentObject> parentItemList) {
         super(context, parentItemList);
         inflater = LayoutInflater.from(context);
     }
 
     @Override
-    public TitleParentViewHolder onCreateParentViewHolder(ViewGroup viewGroup) {
+    public ParentViewHolder onCreateParentViewHolder(ViewGroup viewGroup) {
         View view = inflater.inflate(R.layout.list_parent, viewGroup, false);
-        return new TitleParentViewHolder(view);
+        return new ParentViewHolder(view);
     }
 
     @Override
-    public TitleChildViewHolder onCreateChildViewHolder(ViewGroup viewGroup) {
+    public ChildViewHolder onCreateChildViewHolder(ViewGroup viewGroup) {
         View view = inflater.inflate(R.layout.list_child, viewGroup, false);
-        return new TitleChildViewHolder(view);
+        return new ChildViewHolder(view);
 
     }
 
     @Override
-    public void onBindParentViewHolder(final TitleParentViewHolder holder, final int i,final Object o) {
-        final TitleParent title = (TitleParent) o;
+    public void onBindParentViewHolder(final ParentViewHolder holder, final int i, final Object o) {
+        final ListParent title = (ListParent) o;
         title.setCurholder(holder);
         parents.add(title);
         //Log.i(ActivityPro.TAG,"parent id:" +String.valueOf(i)+ " name:" + title.getTitle() + " obj:" + o.toString());
         holder._textView.setText(title.getTitle());
-        holder._checkBox.setChecked(checked.indexOf(title)!=-1);
+        holder._checkBox.setChecked(UsefulThings.checked.indexOf(title)!=-1);
         holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if (checked.indexOf(title)==-1) {
+                if (UsefulThings.checked.indexOf(title)==-1) {
                     holder._checkBox.setChecked(true);
-                    checked.add(title);
+                    UsefulThings.checked.add(title);
                     for (Object x:title.getChildObjectList()) {
-                        TitleChild child = (TitleChild) x;
+                        ListChild child = (ListChild) x;
                         if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
-                        checked.add(child);
+                        UsefulThings.checked.add(child);
                     }
                 }
-                else {holder._checkBox.setChecked(false);checked.remove(title);}
+                else {holder._checkBox.setChecked(false);
+                    UsefulThings.checked.remove(title);}
                 return true;
             }}
         );
         holder._checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (checked.indexOf(title)==-1) {
-                    checked.add(title);
+                if (UsefulThings.checked.indexOf(title)==-1) {
+                    UsefulThings.checked.add(title);
                     for (Object x:title.getChildObjectList()) {
-                        TitleChild child = (TitleChild) x;
+                        ListChild child = (ListChild) x;
                         if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
-                        checked.add(child);
+                        UsefulThings.checked.add(child);
                     }
                 }
-                else checked.remove(title);
+                else UsefulThings.checked.remove(title);
 
             }}
         );
@@ -88,35 +87,36 @@ public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, 
 
 
     @Override
-    public void onBindChildViewHolder(final TitleChildViewHolder holder, final int i, final Object o) {
-        final TitleChild title = (TitleChild) o;
+    public void onBindChildViewHolder(final ChildViewHolder holder, final int i, final Object o) {
+        final ListChild title = (ListChild) o;
         final boolean[] d = {false};
-        final TitleParent[] parent = {null};
-        for (TitleParent x: parents) {if(x.getChildObjectList().indexOf(title)!=-1) {parent[0]=x;break;}}
+        final ListParent[] parent = {null};
+        for (ListParent x: parents) {if(x.getChildObjectList().indexOf(title)!=-1) {parent[0]=x;break;}}
         title.setCurholder(holder);
         holder.option1.setText(title.getOption1());
         //Log.i(ActivityPro.TAG, "child id:" + String.valueOf(i) + " name:" + title.getOption1() + " obj:" + o.toString() + " Holder:" + holder.toString());
-        holder.checkBox1.setChecked(checked.indexOf(title)!=-1);
+        holder.checkBox1.setChecked(UsefulThings.checked.indexOf(title)!=-1);
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (checked.indexOf(title) == -1)
+                if (UsefulThings.checked.indexOf(title) == -1)
                 {
                     holder.checkBox1.setChecked(true);
-                    checked.add(title);
+                    UsefulThings.checked.add(title);
                     for (Object x:parent[0].getChildObjectList()){
-                        TitleChild child = (TitleChild) x;
-                        if (checked.indexOf(child)!=-1)d[0]=true;
+                        ListChild child = (ListChild) x;
+                        if (UsefulThings.checked.indexOf(child)!=-1)d[0]=true;
                         else  {d[0]=false;break;}
                     }
-                    if (d[0]) {parent[0].getCurholder()._checkBox.setChecked(true);checked.add(parent[0]);}
+                    if (d[0]) {parent[0].getCurholder()._checkBox.setChecked(true);
+                        UsefulThings.checked.add(parent[0]);}
 
                 }
                 else {
                     holder.checkBox1.setChecked(false);
-                    checked.remove(title);
-                    if (checked.indexOf(parent[0])!=-1){
-                        checked.remove(parent[0]);
+                    UsefulThings.checked.remove(title);
+                    if (UsefulThings.checked.indexOf(parent[0])!=-1){
+                        UsefulThings.checked.remove(parent[0]);
                         parent[0].getCurholder()._checkBox.setChecked(false);
                     }
                 }
@@ -125,21 +125,22 @@ public class MyAdapter extends ExpandableRecyclerAdapter<TitleParentViewHolder, 
         holder.checkBox1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (checked.indexOf(title) == -1)
+                if (UsefulThings.checked.indexOf(title) == -1)
                 {
-                    checked.add(title);
+                    UsefulThings.checked.add(title);
                     for (Object x:parent[0].getChildObjectList()){
-                        TitleChild child = (TitleChild) x;
-                        if (checked.indexOf(child)!=-1)d[0]=true;
+                        ListChild child = (ListChild) x;
+                        if (UsefulThings.checked.indexOf(child)!=-1)d[0]=true;
                         else  {d[0]=false;break;}
                     }
-                    if (d[0]) {parent[0].getCurholder()._checkBox.setChecked(true);checked.add(parent[0]);}
+                    if (d[0]) {parent[0].getCurholder()._checkBox.setChecked(true);
+                        UsefulThings.checked.add(parent[0]);}
 
                 }
                 else {
-                    checked.remove(title);
-                    if (checked.indexOf(parent[0])!=-1){
-                        checked.remove(parent[0]);
+                    UsefulThings.checked.remove(title);
+                    if (UsefulThings.checked.indexOf(parent[0])!=-1){
+                        UsefulThings.checked.remove(parent[0]);
                         parent[0].getCurholder()._checkBox.setChecked(false);
                     }
                 }
