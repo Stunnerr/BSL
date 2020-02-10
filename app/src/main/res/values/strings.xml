@@ -2,13 +2,12 @@
     <string name="app_name" translatable="false">Brawl Mods</string>
     <string name="action_about">О программе</string>
     <string name="action_settings">Настройки</string>
-    <string name="section_format" translatable="false">test section</string>
     <string name="getting_root">Получение root-доступа…</string>
     <string name="starting">Запуск…</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="addmod">Добавить мод</string>
     <string name="clear">Очистить кэшированные моды?</string>
-    <string name="isafolder" translatable="false">Это папка</string>
+    <string name="isfile" translatable="false">Это файл</string>
     <string name="success">Установка завершена</string>
 </resources>
