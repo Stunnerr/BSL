@@ -37,7 +37,6 @@ public class Loading extends AppCompatActivity {
             else finishActivity(1);
         }
     }
-    String tag = "Brawl Mods";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,19 +64,19 @@ public class Loading extends AppCompatActivity {
             try{ root= osRes.readLine().equals("0");}
             catch (Exception e){System.exit(1);}
             if (root) {
-                Log.i(tag, "Rooted!");
+                Log.i(UsefulThings.TAG, "Rooted!");
                 return true;
 
             } else {
-                Log.w(tag, "Root access rejected");
+                Log.w(UsefulThings.TAG, "Root access rejected");
                 if(att)Getroot(true);
                 else {
-                    Log.e(tag, "Can't get root access");
+                    Log.e(UsefulThings.TAG, "Can't get root access");
                     System.exit(1);
                 }
             }
         } catch (Exception e) {
-            Log.e(tag,e.toString());
+            Log.e(UsefulThings.TAG,e.toString());
             return false;
         }
         return false;
