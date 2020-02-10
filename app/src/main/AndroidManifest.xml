@@ -8,18 +8,18 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
-        android:requestLegacyExternalStorage="true"
         android:allowBackup="true"
         android:fullBackupContent="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.stunner.moderstars.ActivityAbout">
-
-        </activity>
+        tools:ignore="GoogleAppIndexingWarning"
+        tools:targetApi="29">
+        <activity android:name="com.stunner.moderstars.ActivityAbout"/>
         <activity
             android:name="com.stunner.moderstars.ActivityEasy"
             android:label="@string/app_name" />
