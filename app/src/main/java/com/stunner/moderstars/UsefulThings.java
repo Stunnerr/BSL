@@ -10,17 +10,20 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import androidx.annotation.Nullable;
 
 import static com.stunner.moderstars.ActivityPro.ctx;
-import static com.stunner.moderstars.ActivityPro.TAG;
 
 public class UsefulThings {
+    public static String TAG = "Brawl Mods";
+    public static List<Object> checked = new ArrayList<>();
     static String bspath;
     static File[] filelist(Context context, File folder){
         File[] files = folder.listFiles();
@@ -54,7 +57,7 @@ public class UsefulThings {
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = (ZipEntry) entries.nextElement();
                 //Log.d(TAG,"Trimmed: /" + trimsome(zipEntry.getName()));
-                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() +"/Mods//" + zipEntry.getName()).replace("/" + trimsome(zipEntry.getName()), ""));
+                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() +"/Mods/"+checkmods(ctx).length + zipEntry.getName().replace("/" + trimsome(zipEntry.getName()), "")));
                // Log.d(TAG, file2.toString());
                 file2.getParentFile().mkdirs();
                 if (!zipEntry.isDirectory()) {
@@ -79,7 +82,6 @@ public class UsefulThings {
         }
     }
 
-    public static int modcount(Context context){ return new File (context.getExternalFilesDir(null)+ "/Mods").listFiles().length;}
     static String sudo(String cmd) throws IOException{
         return new DataInputStream(Runtime.getRuntime().exec("su -c " +cmd).getInputStream()).readLine();
     }
@@ -89,16 +91,27 @@ public class UsefulThings {
         //Log.d(TAG, "copy out:"+process.readLine());
     }
 
-    public static File[] checkmods(Context context, int modn){
+    public static int modcount(Context context){
+        String d = context.getExternalFilesDir(null) + "/Mods";
+        File file = new File(d);
+        int count = 0;
+        for (File x:file.listFiles()) {
+            if (x.listFiles().length-1!=-1) count++;
+        }
+        return count;
+    }
+
+    public static File[] checkmod(Context context, int modn){
+        modn--;
         String d = context.getExternalFilesDir(null) + "/Mods/" + modn;
-         new File(d).mkdir();
+        Log.d(TAG, d);
         @Nullable File[] mods = new File(d).listFiles();
         Arrays.sort(mods);
         return mods;
     }
     static File[] checkmods(Context context){
         String d = context.getExternalFilesDir(null) + "/Mods";
-        new File(d).mkdir();
+        new File(d).mkdirs();
         File[] mods = new File(d).listFiles();
         for (File i: mods)i.renameTo(new File(i.getParentFile().toString() +"/"+i.getName().toLowerCase() ));
         mods = new File(d).listFiles();
