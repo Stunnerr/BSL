@@ -4,17 +4,13 @@ import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.bignerdranch.expandablerecyclerview.ViewHolder.ParentViewHolder;
-
-import java.util.List;
-
 import stunner.moderstars.R;
 
-public class TitleParentViewHolder extends ParentViewHolder {
+public class ParentViewHolder extends com.bignerdranch.expandablerecyclerview.ViewHolder.ParentViewHolder {
     public TextView _textView;
     public CheckBox _checkBox;
     public RelativeLayout layout;
-    public TitleParentViewHolder(View itemView) {
+    public ParentViewHolder(View itemView) {
         super(itemView);
         _textView = itemView.findViewById(R.id.parentTitle);
         _checkBox = itemView.findViewById(R.id.checkBox);
