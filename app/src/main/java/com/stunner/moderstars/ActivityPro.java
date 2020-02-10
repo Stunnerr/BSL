@@ -367,7 +367,7 @@ int perms = 0;
                             childList.add(new ListChild(file, modc));
                         }
                     }
-                    if (childList.isEmpty()) childList.add("Это файл");
+                    if (childList.isEmpty()) childList.add(new ListChild(new File(getString(R.string.isfile)), modc));
                     parents.get(i).setChildObjectList(childList);
                     parentObject.add(parents.get(i));
 
