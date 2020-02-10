@@ -1,9 +1,11 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorAccent">#0091EA</item>
-        <item name="colorPrimary">#0091EA</item>
+    </style>
+    <style name="Material" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorAccent">#0091EA</item>
     </style>
     <style name="Divider">
         <item name="android:layout_width">match_parent</item>
