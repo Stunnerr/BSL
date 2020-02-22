@@ -10,4 +10,5 @@
     <string name="clear">Очистить кэшированные моды?</string>
     <string name="isfile" translatable="false">Это файл</string>
     <string name="success">Установка завершена</string>
+    <string name="installing">Установка:</string>
 </resources>
