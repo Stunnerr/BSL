@@ -10,8 +10,8 @@ public class ListChild {
     public File path;
     private int modn;
     public ListChild(File path, int modn) {
-        this.option1 = path.toString().split("/")[path.toString().split("/").length-1];
-        this.path=path;
+        this.option1 = path.getName();
+        this.path = path;
         this.modn = modn-1;
     }
 

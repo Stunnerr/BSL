@@ -17,11 +17,10 @@ public class ListParent implements ParentObject {
     private File path;
    private int modn;
     public ListParent(File path, int modn) {
-        this.title = path.toString().split("/")[path.toString().split("/").length-1];
+        this.title = path.getName();
         this.path = path;
         this.modn= modn-1;
     }
-
     public File getPath() {
         return path;
     }
