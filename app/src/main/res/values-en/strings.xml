@@ -10,4 +10,7 @@
     <string name="action_about">About</string>
     <string name="success">Installation completed</string>
     <string name="installing">Installing:</string>
+    <string name="restore">Restore backup</string>
+    <string name="restored">Restore completed</string>
+    <string name="backingup">Creating backup...</string>
 </resources>
