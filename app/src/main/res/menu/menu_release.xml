@@ -5,17 +5,23 @@
     tools:context="com.stunner.moderstars.ActivityPro">
     <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="1"
         app:showAsAction="never"
         android:title="@string/action_settings" />
     <item
         android:id="@+id/action_add"
-        android:orderInCategory="100"
+        android:orderInCategory="2"
         app:showAsAction="never"
         android:title="@string/addmod" />
     <item
+        android:id="@+id/action_restore"
+        android:orderInCategory="3"
+        app:showAsAction="never"
+        android:title="@string/restore"
+        />
+    <item
         android:id="@+id/action_about"
-        android:orderInCategory="100"
+        android:orderInCategory="4"
         app:showAsAction="never"
         android:title="@string/action_about" />
 
