@@ -3,10 +3,11 @@ package com.stunner.moderstars;
 import android.content.Context;
 import android.util.Log;
 
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,8 +26,12 @@ public class UsefulThings {
     public static String TAG = "Brawl Mods";
     public static List<Object> checked = new ArrayList<>();
     static String bspath;
+    static Runtime process;
+    static DataOutputStream ost;
+    static BufferedReader ist;
     static File[] filelist(Context context, File folder){
         File[] files = folder.listFiles();
+        if(files!=null)
         Arrays.sort(files);
         return files;
 
@@ -51,14 +56,12 @@ public class UsefulThings {
     static void Unzip(String str) {
         try {
             File file = new File(str);
-            new File(ctx.getExternalFilesDir(null).getAbsolutePath()).mkdir();
+            new File(ActivityPro.ctx.getExternalFilesDir(null).getAbsolutePath()).mkdir();
             ZipFile zipFile = new ZipFile(file);
             Enumeration entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                //Log.d(TAG,"Trimmed: /" + trimsome(zipEntry.getName()));
                 File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() +"/Mods/"+checkmods(ctx).length + zipEntry.getName().replace("/" + trimsome(zipEntry.getName()), "")));
-               // Log.d(TAG, file2.toString());
                 file2.getParentFile().mkdirs();
                 if (!zipEntry.isDirectory()) {
                     Log.d(TAG,"Extracting " + file2);
@@ -83,14 +86,26 @@ public class UsefulThings {
     }
 
     static String sudo(String cmd) throws IOException{
-        return new DataInputStream(Runtime.getRuntime().exec("su -c " +cmd).getInputStream()).readLine();
+        if(process == null) {
+            process = Runtime.getRuntime();
+        }
+        process.exec("su");
+        return new DataInputStream(process.exec(cmd).getInputStream()).readLine();
     }
     static void copy(File src, File dst) throws IOException {
-        //Log.d(TAG, "src: " + src.getAbsolutePath() + " dst: " + dst.getAbsolutePath());
-        DataInputStream process = new DataInputStream(Runtime.getRuntime().exec("su -c cp -r " +src.getAbsolutePath()+" "+dst.getAbsolutePath()+ "").getInputStream());
-        //Log.d(TAG, "copy out:"+process.readLine());
+        if(process == null) {
+            process = Runtime.getRuntime();
+        }
+        DataInputStream proces = new DataInputStream(process.exec("cp -r " +src.getAbsolutePath()+" "+dst.getAbsolutePath()+ "").getInputStream());
+        Log.d(TAG, "copy out: "+proces.readLine());
     }
-
+    static void copy(String src, String dst) throws IOException {
+        if(process == null) {
+            process = Runtime.getRuntime();
+        }
+        DataInputStream proces = new DataInputStream(process.exec("cp -r " +src+" "+dst+ "").getInputStream());
+        Log.d(TAG, "copy out: "+proces.readLine());
+    }
     public static int modcount(Context context){
         String d = context.getExternalFilesDir(null) + "/Mods";
         File file = new File(d);
@@ -118,5 +133,4 @@ public class UsefulThings {
         Arrays.sort(mods);
         return mods;
     }
-
 }
