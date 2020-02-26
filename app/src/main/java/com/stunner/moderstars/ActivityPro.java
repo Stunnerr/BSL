@@ -26,7 +26,6 @@ import com.stunner.moderstars.pro.Models.ListChild;
 import com.stunner.moderstars.pro.Models.ListParent;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,53 +42,77 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 import stunner.moderstars.R;
 
-import static com.stunner.moderstars.UsefulThings.*;
+import static com.stunner.moderstars.UsefulThings.TAG;
+import static com.stunner.moderstars.UsefulThings.Unzip;
+import static com.stunner.moderstars.UsefulThings.bspath;
+import static com.stunner.moderstars.UsefulThings.checked;
+import static com.stunner.moderstars.UsefulThings.copy;
+import static com.stunner.moderstars.UsefulThings.sudo;
 
 public class ActivityPro extends AppCompatActivity {
 int perms = 0;
- class Deploy extends AsyncTask<Void,Void,Void> {
+ class Deploy extends AsyncTask<Void,String,String> {
 
 
         ProgressDialog pd;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd = new ProgressDialog(ActivityPro.ctx);
+            pd = new ProgressDialog(getApplicationContext());
             pd.setTitle("Brawl Mods");
-            pd.setMessage("Установка...");
+            pd.setMessage(getString(R.string.installing).replace(":","..."));
             pd.setCancelable(false);
             pd.setCanceledOnTouchOutside(false);
             pd.show();
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
-            for (Object o:checked){
-                if (o.getClass().equals(ListParent.class)){
-                    ListParent x = (ListParent) o;
-                    Log.d(UsefulThings.TAG,x.getforcopy());
-                    try{sudo("mkdir -p "+(bspath+"dkoskd"+ x.getforcopy()));}
-                    catch(IOException e ) {Snackbar.make(findViewById(R.id.pro_root), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);}
-                }
-
-                else
-                if (o.getClass().equals(ListChild.class)){
-                    ListChild x = (ListChild) o;
-                    x.getPath().mkdirs();
-                    Log.d(UsefulThings.TAG,bspath + "dkoskd" + x.getforcopy());
-                    try{copy(x.getPath(), new File(bspath + "dkoskd" + x.getforcopy()));}
-                    catch (IOException e) {
-                        Snackbar.make(findViewById(R.id.pro_root), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);
+        protected String doInBackground(Void... voids) {
+            try {
+                publishProgress(getString(R.string.backingup));
+                sudo("rm -rf "+ bspath+"update1/");
+                copy(bspath + "update/", bspath+"update1/");
+                sudo("rm -rf "+ bspath+"update/");
+                for (Object o : checked) {
+                    if (o.getClass().equals(ListParent.class)) {
+                        ListParent x = (ListParent) o;
+                        publishProgress(getString(R.string.installing) + x.getforcopy());
+                        sudo("mkdir -p "+(bspath+"update"+ x.getforcopy()));
+                        Log.d(UsefulThings.TAG, x.getforcopy());
+                    } else if (o.getClass().equals(ListChild.class)) {
+                        ListChild x = (ListChild) o;
+                        sudo("mkdir -p "+(bspath+"update"+ x.getforcopy().replace("/"+x.getOption1(), "/") ));
+                        copy(x.getPath(), new File(bspath + "update" + x.getforcopy()));
+                        publishProgress(getString(R.string.installing) + x.getforcopy());
+                        x.getPath().mkdirs();
+                        Log.d(UsefulThings.TAG, bspath + x.getforcopy());
+                    }
+                    else{
+                        Log.d(TAG, "doInBackground: wtf");
                     }
                 }
-
-
+            } catch (Exception e) {
+                cancel(true);
+                return e.getLocalizedMessage();
             }
             return null;
         }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
+     @Override
+     protected void onCancelled(String aVoid) {
+            pd.dismiss();
+         Snackbar.make(findViewById(R.id.pro_root),aVoid, Snackbar.LENGTH_LONG);
+         super.onCancelled(aVoid);
+     }
+
+     @Override
+     protected void onProgressUpdate(String... values) {
+         super.onProgressUpdate(values);
+         pd.setMessage(values[0]);
+     }
+
+     @Override
+        protected void onPostExecute(String aVoid) {
             super.onPostExecute(aVoid);
             pd.dismiss();
         }
@@ -97,6 +120,7 @@ int perms = 0;
 
     private TabsAdapter mTabsAdapter;
     private TabLayout mTabLayout;
+    private ViewPager mViewPager;
     FloatingActionButton fab;
     public static Context ctx;
 
@@ -114,7 +138,6 @@ int perms = 0;
     {
         for (int a: results) {
             if(a!= PackageManager.PERMISSION_GRANTED)return false;
-
         }
         return true;
     }
@@ -149,17 +172,26 @@ int perms = 0;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_alpha, menu);
+        getMenuInflater().inflate(R.menu.menu_release, menu);
         return true;
     }
 
+    public void restore(){
+try {
+        copy(bspath+"update/", bspath+"update2/");
+        sudo("rm -rf "+bspath+"update/");
+        copy(bspath+"update1/", bspath+"update/");
+        sudo("rm -rf "+bspath+"update1/");
+        copy(bspath+"update2/", bspath+"update1/");
+        sudo("rm -rf "+bspath+"update2/");
+    }
+    catch (Exception e){e.printStackTrace();}
+    }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_about:
                 Snackbar.make(findViewById(R.id.pro_root), "Some text", Snackbar.LENGTH_SHORT).show();
-
-
                 break;
 
             case R.id.action_settings:
@@ -169,6 +201,10 @@ int perms = 0;
             case R.id.action_add:
 
                 Choosezip();
+                break;
+            case R.id.action_restore:
+                restore();
+                Snackbar.make(findViewById(R.id.pro_root), R.string.restored, Snackbar.LENGTH_SHORT).show();
                 break;
             case R.id.action_alpha:
                 startActivity(new Intent(getApplicationContext(),ActivityEasy.class));
@@ -197,16 +233,26 @@ int perms = 0;
             }
         });
         mTabsAdapter = new TabsAdapter(getSupportFragmentManager());
-        ViewPager mViewPager = findViewById(R.id.viewpager);
+         mViewPager = findViewById(R.id.viewpager);
         mTabLayout = findViewById(R.id.tabs);
         mViewPager.setAdapter(mTabsAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
-        if (mTabsAdapter.getCount()>=1) {
+        int a;
+        try{
+            a=mTabsAdapter.getCount();
+        }
+        catch (NullPointerException e){
+            a=-10;
+        }
+        if (a!=-10) {
             fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    deploy();
+                    Deploy task = new Deploy();
+                    task.execute();
+                    Snackbar.make(findViewById(R.id.pro_root
+                    ), R.string.success, Snackbar.LENGTH_SHORT).setDuration(900).show();
                 }
             });
         }
@@ -220,35 +266,6 @@ int perms = 0;
         super.onResume();
 
     }
-    private void deploy() {
-        for (Object o:checked){
-            if (o.getClass().equals(ListParent.class)){
-                ListParent x = (ListParent) o;
-                try{ sudo("mkdir -p "+(bspath+"update"+ x.getforcopy()));}
-                catch(IOException e ) {
-                    Snackbar.make(findViewById(R.id.pro_root), e.getLocalizedMessage(), Snackbar.LENGTH_LONG);
-                }
-            }
-
-            else
-            if (o.getClass().equals(ListChild.class)){
-                ListChild x = (ListChild) o;
-                x.getPath().mkdirs();
-                try{
-                    sudo("mkdir -p "+(bspath+"update"+ x.getforcopy().replace("/"+x.getOption1(), "/") ));
-                    copy(x.getPath(), new File(bspath + "update" + x.getforcopy()));
-
-                }
-                catch (IOException e) {
-                    Snackbar.make(findViewById(R.id.pro_root), e.getLocalizedMessage(), Snackbar.LENGTH_LONG
-                    );
-                }
-            }
-
-
-        }
-
-    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -259,13 +276,17 @@ int perms = 0;
                     String path = Environment.getExternalStorageDirectory().getPath() +'/'+ uri.toString().replaceAll("%2F", "/").split(Environment.getExternalStorageDirectory().getPath())[uri.toString().split(Environment.getExternalStorageDirectory().getPath()).length - 1];
                     Log.d(TAG, "File Path: " + path);
                     Unzip(path);
-                    mTabLayout.addTab(mTabLayout.newTab());
+                    checked.clear();
+                    mTabsAdapter = new TabsAdapter(getSupportFragmentManager());
+                    mViewPager.setAdapter(mTabsAdapter);
+                    mTabLayout.setupWithViewPager(mViewPager);
                     if (mTabsAdapter.getCount()>=1){
                         fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
                         fab.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                deploy();
+                                Deploy task = new Deploy();
+                                task.execute();
                                 Snackbar.make(findViewById(R.id.pro_root
                                 ), R.string.success, Snackbar.LENGTH_SHORT).setDuration(900).show();
 
@@ -282,9 +303,7 @@ int perms = 0;
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("application/zip");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-
         try {
-
             startActivityForResult(
                     Intent.createChooser(intent, "Выберите архив мода"),
                     13);
@@ -321,8 +340,8 @@ int perms = 0;
 
         public TabsFragment() {
         }
-        static ActivityEasy.TabsFragment newInstance(int sectionNumber) {
-            ActivityEasy.TabsFragment fragment = new ActivityEasy.TabsFragment();
+        static TabsFragment newInstance(int sectionNumber) {
+            TabsFragment fragment = new TabsFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_PAGE, sectionNumber);
             fragment.setArguments(args);
@@ -367,7 +386,6 @@ int perms = 0;
                             childList.add(new ListChild(file, modc));
                         }
                     }
-                    if (childList.isEmpty()) childList.add(new ListChild(new File(getString(R.string.isfile)), modc));
                     parents.get(i).setChildObjectList(childList);
                     parentObject.add(parents.get(i));
 
@@ -376,5 +394,4 @@ int perms = 0;
             } else return null;
         }
     }
-
 }
