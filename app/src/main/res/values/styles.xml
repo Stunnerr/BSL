@@ -1,15 +1,27 @@
 <resources>
 
-    <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorAccent">#0091EA</item>
+        <item name="colorAccent">@color/AccentColor</item>
     </style>
+
     <style name="Material" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorAccent">#0091EA</item>
+        <item name="colorAccent">@color/AccentColor</item>
+        <item name="colorPrimary">@color/AccentColor</item>
+        <item name="colorSecondary">#FFF</item>
+        <item name="colorOnSecondary">@color/white</item>
     </style>
-    <style name="Divider">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">1dp</item>
-        <item name="android:background">?android:attr/listDivider</item>
+
+    <style name="Material.DayNight" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorAccent">@color/AccentColor</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorPrimary">@color/AccentColor</item>
+        <item name="colorPrimaryDark">@color/AccentColor</item>
+        <item name="iconPreferenceColor">#111</item>
+    </style>
+
+    <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout.Colored"></style>
+
+    <style name="Toolbar">
+        <item name="android:textColorSecondary">@color/white</item>
     </style>
 </resources>
