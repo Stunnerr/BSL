@@ -7,18 +7,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bignerdranch.expandablerecyclerview.Adapter.ExpandableRecyclerAdapter;
+import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
 import com.stunner.moderstars.UsefulThings;
 import com.stunner.moderstars.pro.Models.ListChild;
 import com.stunner.moderstars.pro.Models.ListParent;
-import stunner.moderstars.R;
 import com.stunner.moderstars.pro.ViewHolders.ChildViewHolder;
 import com.stunner.moderstars.pro.ViewHolders.ParentViewHolder;
 
-import com.bignerdranch.expandablerecyclerview.Adapter.ExpandableRecyclerAdapter;
-import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import stunner.moderstars.R;
 
 public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHolder, ChildViewHolder> {
 
