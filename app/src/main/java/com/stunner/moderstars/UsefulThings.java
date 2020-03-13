@@ -13,58 +13,70 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import androidx.annotation.Nullable;
-
 import static com.stunner.moderstars.ActivityPro.ctx;
 
 public class UsefulThings {
-    public static String TAG = "Brawl Mods";
+    static String TAG = "BSL";
     public static List<Object> checked = new ArrayList<>();
     static String bspath;
-    static Runtime process;
+    static Comparator<File> comp = new Comparator<File>() {
+        @Override
+        public int compare(File o1, File o2) {
+            Boolean a = o1.isDirectory(), b = o2.isDirectory();
+            if (a == b) return o1.getName().compareTo(o2.getName());
+            return b.compareTo(a);
+        }
+    };
     static DataOutputStream ost;
     static BufferedReader ist;
-    static File[] filelist(Context context, File folder){
+    private static Runtime process;
+
+    static File[] filelist(Context context, File folder) {
         File[] files = folder.listFiles();
-        if(files!=null)
-        Arrays.sort(files);
+        if (files != null)
+            Arrays.sort(files, comp);
         return files;
 
-}
-    static String trimsome(String s){
+    }
+
+    private static String trimsome(String s) {
         Log.d(TAG, s);
         String s1 = s.split("/csv_logic/")[0];
-        s1 =s1.split("/badge/")[0];
-        s1 =s1.split("/csv_client/")[0];
-        s1 =s1.split("/fonts/")[0];
-        s1 =s1.split("/font/")[0];
-        s1 =s1.split("/image/")[0];
-        s1 =s1.split("/localization/")[0];
-        s1 =s1.split("/music/")[0];
-        s1 =s1.split("/sc/")[0];
-        s1 =s1.split("/sc3d/")[0];
-        s1 =s1.split("/sfx/")[0];
-        s1 =s1.split("/shader/")[0];
-        s1 =s1.split("/titan/")[0];
-        return s1.endsWith("/")?(s1):(s1+"/");
+        s1 = s1.split("/badge/")[0];
+        s1 = s1.split("/csv_client/")[0];
+        s1 = s1.split("/fonts/")[0];
+        s1 = s1.split("/font/")[0];
+        s1 = s1.split("/image/")[0];
+        s1 = s1.split("/localization/")[0];
+        s1 = s1.split("/music/")[0];
+        s1 = s1.split("/sc/")[0];
+        s1 = s1.split("/sc3d/")[0];
+        s1 = s1.split("/sfx/")[0];
+        s1 = s1.split("/shader/")[0];
+        s1 = s1.split("/titan/")[0];
+        s1 = s1.split("/fingerprint.json")[0];
+        return s1.endsWith("/") ? (s1) : (s1 + "/");
     }
+
     static void Unzip(String str) {
         try {
             File file = new File(str);
-            new File(ActivityPro.ctx.getExternalFilesDir(null).getAbsolutePath()).mkdir();
+            int b = checkmods(ctx).length;
+            new File(ctx.getExternalFilesDir(null).getAbsolutePath()).mkdirs();
             ZipFile zipFile = new ZipFile(file);
             Enumeration entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() +"/Mods/"+checkmods(ctx).length + zipEntry.getName().replace("/" + trimsome(zipEntry.getName()), "")));
+                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace(trimsome(zipEntry.getName()), "")));
                 file2.getParentFile().mkdirs();
                 if (!zipEntry.isDirectory()) {
-                    Log.d(TAG,"Extracting " + file2);
+                    Log.d(TAG, "Extracting " + file2);
                     BufferedInputStream bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                     byte[] bArr = new byte[1024];
                     BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file2), 1024);
@@ -81,56 +93,84 @@ public class UsefulThings {
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG,"Error :" + e);
+            Log.e(TAG, "Error :" + e);
         }
     }
 
-    static String sudo(String cmd) throws IOException{
-        if(process == null) {
+    static String sudo(String cmd) throws IOException {
+        if (process == null) {
             process = Runtime.getRuntime();
         }
         process.exec("su");
-        return new DataInputStream(process.exec(cmd).getInputStream()).readLine();
+        try {
+            return new DataInputStream(process.exec(cmd).getInputStream()).readLine();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
+
     static void copy(File src, File dst) throws IOException {
-        if(process == null) {
+        if (process == null) {
             process = Runtime.getRuntime();
         }
-        DataInputStream proces = new DataInputStream(process.exec("cp -r " +src.getAbsolutePath()+" "+dst.getAbsolutePath()+ "").getInputStream());
-        Log.d(TAG, "copy out: "+proces.readLine());
+
+
+        try {
+            DataInputStream proces = new DataInputStream(process.exec("cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "").getInputStream());
+            Log.d(TAG, "copy out: " + proces.readLine());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
-    static void copy(String src, String dst) throws IOException {
-        if(process == null) {
+
+    static void copy(String src, String dst) {
+        if (process == null) {
             process = Runtime.getRuntime();
         }
-        DataInputStream proces = new DataInputStream(process.exec("cp -r " +src+" "+dst+ "").getInputStream());
-        Log.d(TAG, "copy out: "+proces.readLine());
+        try {
+            DataInputStream proces = new DataInputStream(process.exec("cp -r " + src + " " + dst + "").getInputStream());
+            Log.d(TAG, "copy out: " + proces.readLine());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
-    public static int modcount(Context context){
+
+    public static int modcount(Context context) {
         String d = context.getExternalFilesDir(null) + "/Mods";
         File file = new File(d);
-        int count = 0;
-        for (File x:file.listFiles()) {
-            if (x.listFiles().length-1!=-1) count++;
+        int count = -10;
+        try {
+            for (File x : file.listFiles()) {
+                if (x.listFiles().length - 1 != -1) count++;
+            }
+        } catch (Exception e) {
+            count = -10;
         }
         return count;
     }
 
-    public static File[] checkmod(Context context, int modn){
+    public static File[] checkmod(Context context, int modn) {
         modn--;
         String d = context.getExternalFilesDir(null) + "/Mods/" + modn;
         Log.d(TAG, d);
-        @Nullable File[] mods = new File(d).listFiles();
-        Arrays.sort(mods);
+        File[] mods = new File(d).listFiles();
+        if (mods != null)
+            Arrays.sort(mods, comp);
         return mods;
     }
-    static File[] checkmods(Context context){
+
+    static File[] checkmods(Context context) {
         String d = context.getExternalFilesDir(null) + "/Mods";
         new File(d).mkdirs();
         File[] mods = new File(d).listFiles();
-        for (File i: mods)i.renameTo(new File(i.getParentFile().toString() +"/"+i.getName().toLowerCase() ));
+        for (File i : mods)
+            i.renameTo(new File(i.getParentFile().toString() + "/" + i.getName().toLowerCase()));
         mods = new File(d).listFiles();
-        Arrays.sort(mods);
+        if (mods != null)
+            Arrays.sort(mods, comp);
         return mods;
     }
 }
