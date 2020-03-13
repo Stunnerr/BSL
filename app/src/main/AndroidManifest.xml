@@ -20,9 +20,7 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="29">
         <activity android:name="com.stunner.moderstars.ActivityAbout" />
-        <activity
-            android:name="com.stunner.moderstars.ActivityEasy"
-            android:label="@string/app_name" />
+        <activity android:name="com.stunner.moderstars.ActivityEasy" />
         <activity
             android:name="com.stunner.moderstars.Loading"
             android:clearTaskOnLaunch="true"
@@ -35,10 +33,5 @@
         </activity>
         <activity android:name="com.stunner.moderstars.ActivityPro" />
         <activity android:name="com.stunner.moderstars.ActivitySettings" />
-
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-4821075935770925~4413859322" />
     </application>
-
 </manifest>
