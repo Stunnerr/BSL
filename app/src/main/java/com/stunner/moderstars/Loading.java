@@ -1,6 +1,9 @@
 package com.stunner.moderstars;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,17 +13,46 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.preference.PreferenceManager;
 import stunner.moderstars.R;
 public class Loading extends AppCompatActivity {
     TextView text;
-    private class MyTask extends AsyncTask <Boolean, Boolean, Boolean> {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_loading);
+        Resources res = this.getResources();
+        int mode = res.getConfiguration().uiMode;
+        SharedPreferences shPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        switch (shPrefs.getString("theme", "0")) {
+            case "1":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                mode = Configuration.UI_MODE_NIGHT_NO;
+                break;
+            case "-1":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                mode = Configuration.UI_MODE_NIGHT_YES;
+                break;
+            default:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+        }
+        Configuration conf = new Configuration(res.getConfiguration());
+        conf.uiMode = mode;
+        createConfigurationContext(conf);
+        text = findViewById(R.id.LoadText);
+        MyTask task = new MyTask();
+        task.execute(true);
+    }
+
+    private class MyTask extends AsyncTask<Boolean, Boolean, Boolean> {
         @Override
         protected Boolean doInBackground(Boolean... root) {
             root[0] = false;
-            try{
+            try {
                 root[0] = Getroot(false);
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -33,24 +65,11 @@ public class Loading extends AppCompatActivity {
                 text.setText(R.string.starting);
                 Intent intent = new Intent(getApplicationContext(), ActivityPro.class);
                 startActivity(intent);
-            }
-            else finishActivity(1);
+                finish();
+            } else finishActivity(1);
         }
     }
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_loading);
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        text = findViewById(R.id.LoadText);
-        MyTask task = new MyTask();
-        task.execute(true);
-
-    }
 
     boolean Getroot(final boolean att) {
         try {
