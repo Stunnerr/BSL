@@ -1,0 +1,11 @@
+<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    <androidx.preference.ListPreference
+        app:defaultValue="0"
+        app:dialogTitle="@string/theme"
+        app:entries="@array/pref_theme_read"
+        app:entryValues="@array/pref_theme"
+        app:icon="@drawable/ic_color_lens"
+        app:key="theme"
+        app:title="@string/theme" />
+</androidx.preference.PreferenceScreen>
