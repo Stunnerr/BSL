@@ -141,7 +141,7 @@ public class UsefulThings {
     public static int modcount(Context context) {
         String d = context.getExternalFilesDir(null) + "/Mods";
         File file = new File(d);
-        int count = -10;
+        int count = 0;
         try {
             for (File x : file.listFiles()) {
                 if (x.listFiles().length - 1 != -1) count++;
