@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout android:layout_marginStart="8dp"
     android:id="@+id/layout"
+    android:background="@color/child"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android">
@@ -19,7 +20,4 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerHorizontal="true"/>
-    <View style="@style/Divider"/>
-    <View style="@style/Divider"
-        android:layout_alignParentBottom="true"/>
 </RelativeLayout>
