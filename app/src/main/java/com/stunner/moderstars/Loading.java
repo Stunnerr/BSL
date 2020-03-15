@@ -76,11 +76,15 @@ public class Loading extends AppCompatActivity {
             Process process = Runtime.getRuntime().exec("su");
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
             DataInputStream osRes = new DataInputStream(process.getInputStream());
-            os.writeBytes("id -u\n");
+            os.writeBytes("id\n");
             os.flush();
             Thread.sleep(400);
             boolean root = false;
-            try{ root= osRes.readLine().equals("0");}
+            try {
+                byte[] b = new byte[1024];
+                osRes.read(b);
+                root = new String(b).contains("uid=0(root)");
+            }
             catch (Exception e){System.exit(1);}
             if (root) {
                 Log.i(UsefulThings.TAG, "Rooted!");
