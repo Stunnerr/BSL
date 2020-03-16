@@ -1,15 +1,17 @@
 package com.stunner.moderstars;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,6 +41,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.loader.content.CursorLoader;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,16 +51,14 @@ import stunner.moderstars.R;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.ANIMATION_MODE_SLIDE;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
 import static com.stunner.moderstars.UsefulThings.TAG;
-import static com.stunner.moderstars.UsefulThings.Unzip;
 import static com.stunner.moderstars.UsefulThings.bspath;
 import static com.stunner.moderstars.UsefulThings.checked;
 import static com.stunner.moderstars.UsefulThings.copy;
 import static com.stunner.moderstars.UsefulThings.sudo;
+import static com.stunner.moderstars.UsefulThings.unzipper;
 
 public class ActivityPro extends AppCompatActivity {
     int perms = 0;
-    Snackbar snackbar;
-
     private void requestAppPermissions() {
         if (hasReadPermissions() && hasWritePermissions()) {
             return;
@@ -69,11 +70,13 @@ public class ActivityPro extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
     }
 
-    private TabsAdapter mTabsAdapter;
-    private TabLayout mTabLayout;
-    private ViewPager mViewPager;
-    FloatingActionButton fab;
+    @SuppressLint("StaticFieldLeak")
     public static Context ctx;
+    static TabsAdapter mTabsAdapter;
+    static TabLayout mTabLayout;
+    static ViewPager mViewPager;
+    static FloatingActionButton fab;
+    static FragmentManager fragmentManager;
 
     public boolean granted(int[] results) {
         for (int a : results) {
@@ -81,6 +84,7 @@ public class ActivityPro extends AppCompatActivity {
         }
         return true;
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -128,6 +132,8 @@ public class ActivityPro extends AppCompatActivity {
         return true;
     }
 
+    String[] supportedMimeTypes = {"application/zip", "application/vnd.android.package-archive"};
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -137,6 +143,7 @@ public class ActivityPro extends AppCompatActivity {
 
             case R.id.action_about:
                 startActivity(new Intent(this, ActivityAbout.class));
+                //Checkmd5();
                 break;
 
             case R.id.action_add:
@@ -144,7 +151,7 @@ public class ActivityPro extends AppCompatActivity {
                 break;
             case R.id.action_restore:
                 restore();
-                snackbar.setText(getText(R.string.restored)).show();
+                Snackbar.make(findViewById(R.id.pro_root), getText(R.string.restored), LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).show();
                 break;
             case R.id.action_alpha:
                 startActivity(new Intent(getApplicationContext(), ActivityEasy.class));
@@ -171,7 +178,6 @@ public class ActivityPro extends AppCompatActivity {
         mTabLayout.setVisibility(View.INVISIBLE);
         setSupportActionBar(toolbar);
         toolbar.inflateMenu(R.menu.menu_release);
-        snackbar = Snackbar.make(findViewById(R.id.pro_root), "", LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE);
         bspath = getFilesDir().getAbsolutePath().split(getPackageName())[0] + "com.supercell.brawlstars/";
         mTabsAdapter = new TabsAdapter(getSupportFragmentManager());
         int a;
@@ -190,8 +196,7 @@ public class ActivityPro extends AppCompatActivity {
                 public void onClick(View v) {
                     Deploy task = new Deploy();
                     task.execute();
-                    snackbar.setText(R.string.success).setDuration(900).show();
-                    snackbar.setDuration(LENGTH_SHORT);
+                    //Snackbar.make(findViewById(R.id.pro_root), "", LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).setText(R.string.success).setDuration(900).show();
                 }
             });
         }
@@ -212,9 +217,20 @@ public class ActivityPro extends AppCompatActivity {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
+        fragmentManager = getSupportFragmentManager();
         requestAppPermissions();
         super.onResume();
+    }
 
+    private String getRealPathFromURI(Uri contentUri) {
+        String[] proj = {MediaStore.Images.Media.DATA};
+        CursorLoader loader = new CursorLoader(getApplicationContext(), contentUri, proj, null, null, null);
+        Cursor cursor = loader.loadInBackground();
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        String result = cursor.getString(column_index);
+        cursor.close();
+        return result;
     }
 
     @Override
@@ -224,31 +240,31 @@ public class ActivityPro extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     Uri uri = data.getData();
                     Log.d(TAG, "File Uri: " + uri.toString());
-                    String path = Environment.getExternalStorageDirectory().getPath() + '/' + uri.toString().replaceAll("%2F", "/").split(Environment.getExternalStorageDirectory().getPath())[uri.toString().split(Environment.getExternalStorageDirectory().getPath()).length - 1];
-                    Log.d(TAG, "File Path: " + path);
-                    Unzip(path);
-                    checked.clear();
-                    mTabsAdapter = new TabsAdapter(getSupportFragmentManager());
-                    mViewPager.setAdapter(mTabsAdapter);
-                    mTabLayout.setupWithViewPager(mViewPager);
-                    if (mTabsAdapter.getCount() >= 1) {
-                        fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
-                        fab.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Deploy task = new Deploy();
-                                task.execute();
-                                snackbar.setText(R.string.success).setDuration(900).show();
-                                snackbar.setDuration(LENGTH_SHORT);
-
-                            }
-                        });
-                    }
-
+                    String path = getRealPathFromURI(uri);//Environment.getExternalStorageDirectory().getPath() + '/' + uri.toString().replaceAll("%2F", "/").split(Environment.getExternalStorageDirectory().getPath())[uri.toString().split(Environment.getExternalStorageDirectory().getPath()).length - 1];
+                    Log.d(TAG, "onActivityResult: " + path);
+                    unzipper.execute(path);
                 }
                 break;
+            default:
+                Log.e(TAG, "Unexpected value: " + requestCode);
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void Choosezip() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, supportedMimeTypes);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        try {
+            startActivityForResult(
+                    Intent.createChooser(intent, "Выберите архив мода"),
+                    13);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "Установите файловый менеджер!",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static class TabsFragment extends Fragment {
@@ -306,8 +322,8 @@ public class ActivityPro extends AppCompatActivity {
                 List<ListParent> parents = initParents(modc);
                 for (int i = 0; i < folc + 1; i++) {
                     List<Object> childList = new ArrayList<>();
-                    if (UsefulThings.filelist(getContext(), UsefulThings.checkmod(getContext(), modc)[i]) != null) {
-                        for (File file : UsefulThings.filelist(getContext(), UsefulThings.checkmod(getContext(), modc)[i])) {
+                    if (UsefulThings.filelist(UsefulThings.checkmod(getContext(), modc)[i]) != null) {
+                        for (File file : UsefulThings.filelist(UsefulThings.checkmod(getContext(), modc)[i])) {
                             childList.add(new ListChild(file, modc));
                         }
                     }
@@ -319,21 +335,6 @@ public class ActivityPro extends AppCompatActivity {
             } else return null;
         }
     }
-
-    private void Choosezip() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/zip");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        try {
-            startActivityForResult(
-                    Intent.createChooser(intent, "Выберите архив мода"),
-                    13);
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(this, "Установите файловый менеджер!",
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
-
     class Deploy extends AsyncTask<Void, String, String> {
 
 
@@ -342,8 +343,8 @@ public class ActivityPro extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd = new ProgressDialog(getApplicationContext());
-            pd.setTitle("Brawl Mods");
+            pd = new ProgressDialog(ActivityPro.this);
+            pd.setTitle("BSL");
             pd.setMessage(getString(R.string.installing).replace(":", "..."));
             pd.setCancelable(false);
             pd.setCanceledOnTouchOutside(false);
@@ -373,7 +374,7 @@ public class ActivityPro extends AppCompatActivity {
                     } else {
                         cancel(true);
                         Log.d(TAG, "doInBackground: wtf");
-                        return "";
+                        return "error";
                     }
                 }
             } catch (Exception e) {
@@ -386,7 +387,7 @@ public class ActivityPro extends AppCompatActivity {
         @Override
         protected void onCancelled(String aVoid) {
             pd.dismiss();
-            snackbar.setText(aVoid).show();
+            Snackbar.make(findViewById(R.id.pro_root), "", LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).setText(aVoid).show();
             super.onCancelled(aVoid);
         }
 
@@ -400,7 +401,7 @@ public class ActivityPro extends AppCompatActivity {
         protected void onPostExecute(String aVoid) {
             super.onPostExecute(aVoid);
             pd.dismiss();
-            snackbar.setText(aVoid).show();
+            Snackbar.make(findViewById(R.id.pro_root), (aVoid == null) ? (getString(R.string.success)) : (aVoid), LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).show();
         }
     }
 
