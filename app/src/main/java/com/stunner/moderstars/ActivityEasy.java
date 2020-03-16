@@ -2,17 +2,6 @@ package com.stunner.moderstars;
 
 
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
-import stunner.moderstars.R;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,6 +23,16 @@ import com.stunner.moderstars.pro.Models.ListParent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
+import stunner.moderstars.R;
 
 import static com.stunner.moderstars.UsefulThings.TAG;
 
@@ -136,8 +135,8 @@ public class ActivityEasy extends AppCompatActivity {
                 List<ListParent> parents = initParents(modc);
                 for (int i = 0; i < folc; i++) {
                     List<Object> childList = new ArrayList<>();
-                    if (UsefulThings.filelist(getContext(), UsefulThings.checkmod(getContext(), modc)[i]) != null){
-                        for (File file : UsefulThings.filelist(getContext(), UsefulThings.checkmod(getContext(), modc)[i])) {//список файлов
+                    if (UsefulThings.filelist(UsefulThings.checkmod(getContext(), modc)[i]) != null) {
+                        for (File file : UsefulThings.filelist(UsefulThings.checkmod(getContext(), modc)[i])) {//список файлов
                             childList.add(new ListChild(file, modc));
 
                         }
