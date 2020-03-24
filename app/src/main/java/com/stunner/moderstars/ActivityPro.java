@@ -424,7 +424,7 @@ public class ActivityPro extends AppCompatActivity {
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return "Mod #" + (position + 1);
+            return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("mod" + position, getString(R.string.mod) + (position + 1));
         }
     }
 }
