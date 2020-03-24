@@ -1,6 +1,6 @@
 <androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    <androidx.preference.ListPreference
+    <androidx.preference.DropDownPreference
         app:defaultValue="0"
         app:dialogTitle="@string/theme"
         app:entries="@array/pref_theme_read"
