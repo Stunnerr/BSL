@@ -51,38 +51,59 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
         //Log.i(ActivityPro.TAG,"parent id:" +String.valueOf(i)+ " name:" + title.getTitle() + " obj:" + o.toString());
         holder._textView.setText(title.getTitle());
         holder._checkBox.setChecked(UsefulThings.checked.indexOf(title)!=-1);
-        holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (UsefulThings.checked.indexOf(title)==-1) {
-                    holder._checkBox.setChecked(true);
-                    UsefulThings.checked.add(title);
-                    for (Object x:title.getChildObjectList()) {
-                        ListChild child = (ListChild) x;
-                        if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
-                        UsefulThings.checked.add(child);
-                    }
-                }
-                else {holder._checkBox.setChecked(false);
-                    UsefulThings.checked.remove(title);}
-                return true;
-            }}
-        );
-        holder._checkBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (UsefulThings.checked.indexOf(title)==-1) {
-                    UsefulThings.checked.add(title);
-                    for (Object x:title.getChildObjectList()) {
-                        ListChild child = (ListChild) x;
-                        if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
-                        UsefulThings.checked.add(child);
-                    }
-                }
-                else UsefulThings.checked.remove(title);
+        if (((ListParent) o).getPath().isDirectory()) {
+            holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (UsefulThings.checked.indexOf(title)==-1) {
+                        holder._checkBox.setChecked(true);
+                        UsefulThings.checked.add(title);
+                        for (Object x:title.getChildObjectList()) {
+                            ListChild child = (ListChild) x;
+                            if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
+                            UsefulThings.checked.add(child);
+                        }
+                    } else {holder._checkBox.setChecked(false);
+                        UsefulThings.checked.remove(title);}
+                    return true;
+                }}
+            );
+            holder._checkBox.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (UsefulThings.checked.indexOf(title)==-1) {
+                        UsefulThings.checked.add(title);
+                        for (Object x:title.getChildObjectList()) {
+                            ListChild child = (ListChild) x;
+                            if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
+                            UsefulThings.checked.add(child);
+                        }
+                    } else UsefulThings.checked.remove(title);
 
-            }}
-        );
+                }}
+            );
+        } else {
+            holder.layout.setOnClickListener(new View.OnClickListener() {
+                                                 @Override
+                                                 public void onClick(View v) {
+                                                     if (UsefulThings.checked.indexOf(title) == -1) {
+                                                         holder._checkBox.setChecked(true);
+                                                         UsefulThings.checked.add(title);
+                                                         for (Object x : title.getChildObjectList()) {
+                                                             ListChild child = (ListChild) x;
+                                                             if (child.getCurholder() != null)
+                                                                 child.getCurholder().checkBox1.setChecked(true);
+                                                             UsefulThings.checked.add(child);
+                                                         }
+                                                     } else {
+                                                         holder._checkBox.setChecked(false);
+                                                         UsefulThings.checked.remove(title);
+                                                     }
+                                                 }
+                                             }
+            );
+
+        }
     }
 
 
