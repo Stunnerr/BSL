@@ -47,7 +47,6 @@ public class ListParent implements ParentObject {
         mChildrenList = list;
     }
     public String getforcopy(){
-        String p = "/"+path.getAbsolutePath().split("com.stunner.moderstars/files/Mods/" + modn+"/")[path.toString().split("com.stunner.moderstars/files/Mods/" + modn+"/").length-1];
-        return p;
+        return "/" + path.getAbsolutePath().split("com.stunner.moderstars/files/Mods/" + modn + "/")[path.toString().split("com.stunner.moderstars/files/Mods/" + modn + "/").length - 1];
     }
 }
