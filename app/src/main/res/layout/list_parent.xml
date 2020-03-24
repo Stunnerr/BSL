@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/layout1">
+    android:id="@+id/layout1"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
     <TextView
         android:id="@+id/parentTitle"
         android:padding="16dp"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        tools:ignore="RelativeOverlap" />
 
     <CheckBox
         android:id="@+id/checkBox"

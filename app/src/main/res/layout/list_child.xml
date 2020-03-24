@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:layout_marginStart="8dp"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layout"
     android:background="@color/child"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:layout_marginStart="8dp"
+    android:clickable="true"
+    android:focusable="true">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground">
     <TextView
         android:id="@+id/option1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@id/checkBox1"
-        android:padding="8dp" />
+        android:layout_centerVertical="true"
+        android:padding="8dp"
+        tools:ignore="RelativeOverlap" />
 
         <CheckBox
             android:id="@+id/checkBox1"
@@ -20,4 +28,5 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerHorizontal="true"/>
+</RelativeLayout>
 </RelativeLayout>
