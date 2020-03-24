@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.preference.DropDownPreference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import stunner.moderstars.R;
@@ -60,6 +61,8 @@ public class ActivitySettings extends AppCompatActivity {
 
         @Override
         public void onResume() {
+            DropDownPreference dp = (DropDownPreference) getPreferenceScreen().getPreference(0);
+            dp.setSummary(dp.getEntry());
             super.onResume();
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         }
@@ -73,6 +76,8 @@ public class ActivitySettings extends AppCompatActivity {
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences pref, String newValue) {
+            DropDownPreference dp = (DropDownPreference) getPreferenceScreen().getPreference(0);
+            dp.setSummary(dp.getEntry());
             Log.d(UsefulThings.TAG, "preferenceChange: " + newValue + " " + pref.getString(newValue, "ee"));
             switch (newValue) {
                 case "theme":
