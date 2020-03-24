@@ -25,4 +25,5 @@
         <item>-1</item>
     </string-array>
     <string name="extracting">Extracting:</string>
+    <string name="mod">MOD #</string>
 </resources>

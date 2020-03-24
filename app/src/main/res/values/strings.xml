@@ -25,4 +25,5 @@
         <item name="dark">-1</item>
     </string-array>
     <string name="extracting">Распаковка:</string>
+    <string name="mod">МОД #</string>
 </resources>
