@@ -40,7 +40,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.loader.content.CursorLoader;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -362,14 +362,16 @@ public class ActivityPro extends AppCompatActivity {
                     if (o.getClass().equals(ListParent.class)) {
                         ListParent x = (ListParent) o;
                         publishProgress(getString(R.string.installing) + x.getforcopy());
-                        sudo("mkdir -p " + (bspath + "update" + x.getforcopy()));
+                        Log.d(TAG, sudo("mkdir -p " + (bspath + "update/" + x.getforcopy())));
                         Log.d(TAG, x.getforcopy());
                     } else if (o.getClass().equals(ListChild.class)) {
                         ListChild x = (ListChild) o;
-                        sudo("mkdir -p " + (bspath + "update" + x.getforcopy().replace("/" + x.getOption1(), "/")));
-                        copy(x.getPath(), new File(bspath + "update" + x.getforcopy()));
+                        sudo("mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
                         publishProgress(getString(R.string.installing) + x.getforcopy());
+                        copy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
                         x.getPath().mkdirs();
+                        Log.d(TAG, "mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
+                        Log.d(TAG, x.getPath().getAbsolutePath());
                         Log.d(TAG, bspath + x.getforcopy());
                     } else {
                         cancel(true);
@@ -405,7 +407,7 @@ public class ActivityPro extends AppCompatActivity {
         }
     }
 
-    public class TabsAdapter extends FragmentPagerAdapter {
+    public class TabsAdapter extends FragmentStatePagerAdapter {
 
         TabsAdapter(FragmentManager fm) {
             super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);

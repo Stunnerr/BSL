@@ -14,7 +14,6 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -107,15 +106,16 @@ public class UsefulThings {
         }
     }
 
-    static String sudo(String cmd) throws IOException {
+    static byte[] output;
+
+    static String sudo(String cmd) {
+        output = new byte[256];
         if (process == null) {
             process = Runtime.getRuntime();
         }
-        process.exec("su");
-        byte[] bytes = new byte[256];
         try {
-            new DataInputStream(process.exec(cmd).getInputStream()).read(bytes);
-            return new String(bytes);
+            new DataInputStream(process.exec("su -c " + cmd).getInputStream()).readFully(output);
+            return new String(output);
         } catch (Exception e) {
             e.printStackTrace();
             return "";
@@ -123,14 +123,16 @@ public class UsefulThings {
     }
 
     static void copy(File src, File dst) {
+        output = new byte[256];
         if (process == null) {
             process = Runtime.getRuntime();
         }
 
 
         try {
-            DataInputStream proces = new DataInputStream(process.exec("cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "").getInputStream());
-            Log.d(TAG, "copy out: " + proces.readLine());
+            Log.d(TAG, "su -c cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "");
+            new DataInputStream(process.exec("su -c cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "").getInputStream()).readFully(output);
+            Log.d(TAG, "copy out: " + new String(output));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -150,19 +152,20 @@ public class UsefulThings {
     }
 
     static void copy(String src, String dst) {
+        output = new byte[256];
         if (process == null) {
             process = Runtime.getRuntime();
         }
         try {
-            DataInputStream proces = new DataInputStream(process.exec("cp -r " + src + " " + dst + "").getInputStream());
-            Log.d(TAG, "copy out: " + proces.readLine());
+            new DataInputStream(process.exec("su -c cp -r " + src + " " + dst + "").getInputStream()).readFully(output);
+            Log.d(TAG, "copy out: " + new String(output));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    public static int modcount(Context context) {
+    static int modcount(Context context) {
         String d = context.getExternalFilesDir(null) + "/Mods";
         File file = new File(d);
         int count = 0;
@@ -323,6 +326,7 @@ public class UsefulThings {
 
         @Override
         protected void onPostExecute(Void aVoid) {
+            ActivityPro.mTabsAdapter.notifyDataSetChanged();
             pd.cancel();
             super.onPostExecute(aVoid);
         }
