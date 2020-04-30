@@ -2,16 +2,15 @@ package com.stunner.moderstars;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,6 +28,7 @@ import com.stunner.moderstars.pro.Models.ListChild;
 import com.stunner.moderstars.pro.Models.ListParent;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,12 +36,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.loader.content.CursorLoader;
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,10 +56,10 @@ import static com.stunner.moderstars.UsefulThings.bspath;
 import static com.stunner.moderstars.UsefulThings.checked;
 import static com.stunner.moderstars.UsefulThings.copy;
 import static com.stunner.moderstars.UsefulThings.sudo;
-import static com.stunner.moderstars.UsefulThings.unzipper;
 
 public class ActivityPro extends AppCompatActivity {
     int perms = 0;
+
     private void requestAppPermissions() {
         if (hasReadPermissions() && hasWritePermissions()) {
             return;
@@ -75,7 +76,8 @@ public class ActivityPro extends AppCompatActivity {
     static TabsAdapter mTabsAdapter;
     static TabLayout mTabLayout;
     static ViewPager mViewPager;
-    static FloatingActionButton fab;
+    static FloatingActionButton[] fab;
+    static CardView[] cardViews;
     static FragmentManager fragmentManager;
 
     public boolean granted(int[] results) {
@@ -113,6 +115,9 @@ public class ActivityPro extends AppCompatActivity {
         return (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
     }
 
+    static int a = -10;
+    boolean menu = false;
+
     public void restore() {
         try {
             copy(bspath + "update/", bspath + "update2/");
@@ -134,6 +139,38 @@ public class ActivityPro extends AppCompatActivity {
 
     String[] supportedMimeTypes = {"application/zip", "application/vnd.android.package-archive"};
 
+    private void togglemenu(final int c) {
+        Runnable open = new Runnable() {
+            @Override
+            public void run() {
+                cardViews[0].animate().setInterpolator(new FastOutSlowInInterpolator()).alpha(2);
+                cardViews[1].animate().setInterpolator(new FastOutSlowInInterpolator()).alpha(1);
+            }
+        };
+        Runnable close = new Runnable() {
+            @Override
+            public void run() {
+                fab[0].animate().setInterpolator(new FastOutSlowInInterpolator()).rotation(0);
+                fab[1].animate().setInterpolator(new FastOutSlowInInterpolator()).translationY(0).alpha(0);
+                fab[2].animate().setInterpolator(new FastOutSlowInInterpolator()).translationY(0).alpha(0);
+            }
+        };
+        if (!menu) {
+            fab[0].animate().setInterpolator(new FastOutSlowInInterpolator()).rotation(45);
+            fab[1].animate().setInterpolator(new FastOutSlowInInterpolator()).translationY(-getResources().getDimension(R.dimen.standard_55)).alpha(2).withStartAction(open);
+            if (c == 2) {
+                fab[2].animate().setInterpolator(new FastOutSlowInInterpolator()).translationY(-getResources().getDimension(R.dimen.standard_105)).alpha(1);
+            }
+            //open.run();
+        } else {
+            cardViews[0].animate().setInterpolator(new FastOutSlowInInterpolator()).alpha(0);
+            cardViews[1].animate().setInterpolator(new FastOutSlowInInterpolator()).alpha(0).withStartAction(close);
+
+            //close.run();
+        }
+        menu = !menu;
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -142,8 +179,39 @@ public class ActivityPro extends AppCompatActivity {
                 break;
 
             case R.id.action_about:
-                startActivity(new Intent(this, ActivityAbout.class));
-                //Checkmd5();
+                //startActivity(new Intent(this, ActivityAbout.class));
+                final ProgressDialog pd = new ProgressDialog(ctx);
+                Runnable target = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //Main.main(getExternalFilesDir(null) + "/sign", getExternalFilesDir(null) + "/in.apk", getExternalFilesDir(null) + "/out.apk");
+                            //pd.dismiss();
+                            DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                            Uri uri = Uri.parse("https://apkpure.com/ru/brawl-stars-android/com.supercell.brawlstars/download?from=details");
+                            DownloadManager.Request request = new DownloadManager.Request(uri);
+                            request.setTitle("Brawl Stars APK");
+                            request.setDescription("Downloading");
+                            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                            request.setVisibleInDownloadsUi(false);
+                            request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/myfile.apk"));
+                            downloadmanager.enqueue(request);
+                        } catch (Exception e) {
+                            Log.e(TAG, "onOptionsItemSelected: ", e);
+                        }
+                    }
+                };
+                Thread thread = new Thread(target);
+                try {
+                    UsefulThings.calculateSHA(new FileInputStream(new File(getExternalFilesDir(null) + "/myfile.apk")));
+                } catch (Exception ignore) {
+                }
+                thread.start();
+                pd.setCancelable(false);
+                pd.setCanceledOnTouchOutside(false);
+                pd.setTitle("BSL");
+                pd.setMessage("Signing...");
+                pd.show();
                 break;
 
             case R.id.action_add:
@@ -154,7 +222,7 @@ public class ActivityPro extends AppCompatActivity {
                 Snackbar.make(findViewById(R.id.pro_root), getText(R.string.restored), LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).show();
                 break;
             case R.id.action_alpha:
-                startActivity(new Intent(getApplicationContext(), ActivityEasy.class));
+                startActivity(new Intent(getApplicationContext(), ActivityPro.class));
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -166,11 +234,26 @@ public class ActivityPro extends AppCompatActivity {
         requestAppPermissions();
         setContentView(R.layout.activity_pro);
         Toolbar toolbar = findViewById(R.id.toolbar);
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        fab = new FloatingActionButton[]{findViewById(R.id.fab), findViewById(R.id.fab1), findViewById(R.id.fab2)};
+        cardViews = new CardView[]{findViewById(R.id.fab1_ttp), findViewById(R.id.fab2_ttp)};
+        fab[0].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Choosezip();
+            }
+        });
+        fab[1].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                togglemenu(1);
+                Choosezip();
+            }
+        });
+        fab[2].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                togglemenu(2);
+                new Deploy().execute();
             }
         });
         mViewPager = findViewById(R.id.viewpager);
@@ -180,7 +263,6 @@ public class ActivityPro extends AppCompatActivity {
         toolbar.inflateMenu(R.menu.menu_release);
         bspath = getFilesDir().getAbsolutePath().split(getPackageName())[0] + "com.supercell.brawlstars/";
         mTabsAdapter = new TabsAdapter(getSupportFragmentManager());
-        int a;
         try {
             a = mTabsAdapter.getCount();
         } catch (NullPointerException e) {
@@ -190,13 +272,10 @@ public class ActivityPro extends AppCompatActivity {
             mViewPager.setAdapter(mTabsAdapter);
             mTabLayout.setupWithViewPager(mViewPager);
             mTabLayout.setVisibility(View.VISIBLE);
-            fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
-            fab.setOnClickListener(new View.OnClickListener() {
+            fab[0].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Deploy task = new Deploy();
-                    task.execute();
-                    //Snackbar.make(findViewById(R.id.pro_root), "", LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).setText(R.string.success).setDuration(900).show();
+                    togglemenu(2);
                 }
             });
         }
@@ -205,6 +284,7 @@ public class ActivityPro extends AppCompatActivity {
     @Override
     protected void onResume() {
         ctx = this;
+        if (a != mTabsAdapter.getCount()) mTabsAdapter.notifyDataSetChanged();
         SharedPreferences shPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         switch (shPrefs.getString("theme", "0")) {
             case "1":
@@ -221,28 +301,30 @@ public class ActivityPro extends AppCompatActivity {
         requestAppPermissions();
         super.onResume();
     }
-
-    private String getRealPathFromURI(Uri contentUri) {
-        String[] proj = {MediaStore.Images.Media.DATA};
-        CursorLoader loader = new CursorLoader(getApplicationContext(), contentUri, proj, null, null, null);
-        Cursor cursor = loader.loadInBackground();
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        String result = cursor.getString(column_index);
-        cursor.close();
-        return result;
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case 13:
+
                 if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-                    Log.d(TAG, "File Uri: " + uri.toString());
-                    String path = getRealPathFromURI(uri);//Environment.getExternalStorageDirectory().getPath() + '/' + uri.toString().replaceAll("%2F", "/").split(Environment.getExternalStorageDirectory().getPath())[uri.toString().split(Environment.getExternalStorageDirectory().getPath()).length - 1];
-                    Log.d(TAG, "onActivityResult: " + path);
-                    unzipper.execute(path);
+                    String[] paths;
+                    if (null != data.getClipData()) { // checking multiple selection or not
+                        paths = new String[data.getClipData().getItemCount()];
+                        for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+                            Uri uri = data.getClipData().getItemAt(i).getUri();
+                            Log.d(TAG, "File Uri: " + uri.toString());
+                            String path = new FileUtils(getApplicationContext()).getPath(uri);
+                            Log.d(TAG, "onActivityResult: " + path);
+                            paths[i] = path;
+                        }
+                    } else {
+                        Uri uri = data.getData();
+                        Log.d(TAG, "File Uri: " + uri.toString());
+                        String path = new FileUtils(getApplicationContext()).getPath(uri);
+                        Log.d(TAG, "onActivityResult: " + path);
+                        paths = new String[]{path};
+                    }
+                    new UsefulThings.Unzipper().execute(paths);
                 }
                 break;
             default:
@@ -255,6 +337,7 @@ public class ActivityPro extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_MIME_TYPES, supportedMimeTypes);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
 
         try {
@@ -335,6 +418,7 @@ public class ActivityPro extends AppCompatActivity {
             } else return null;
         }
     }
+
     class Deploy extends AsyncTask<Void, String, String> {
 
 
