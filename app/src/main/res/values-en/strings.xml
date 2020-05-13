@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="clear">Clear cached mods?</string>
     <string name="addmod">Add mod</string>
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="starting">Starting…</string>
-    <string name="getting_root">Gathering root access…</string>
+    <string name="getting_root">Checking access…</string>
     <string name="action_settings">Settings</string>
     <string name="action_about">About</string>
     <string name="success">Installation completed</string>
@@ -26,4 +25,9 @@
     </string-array>
     <string name="extracting">Extracting:</string>
     <string name="mod">MOD #</string>
+    <string name="install">Install</string>
+    <string name="variant">Choose action</string>
+    <string name="sign">Sign</string>
+    <string name="signing">Signing...</string>
+    <string name="signwarn">To create signed APK original Brawl Stars APK needs to be downloaded (%1$s MB). Continue?</string>
 </resources>

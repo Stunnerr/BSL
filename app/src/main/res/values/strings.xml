@@ -2,12 +2,11 @@
     <string name="app_name" translatable="false">BSL</string>
     <string name="action_about">О программе</string>
     <string name="action_settings">Настройки</string>
-    <string name="getting_root">Получение root-доступа…</string>
+    <string name="getting_root">Проверка доступа…</string>
     <string name="starting">Запуск…</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="addmod">Добавить мод</string>
-    <string name="clear">Очистить кэшированные моды?</string>
     <string name="success">Установка завершена</string>
     <string name="installing">Установка:</string>
     <string name="restore">Восстановить копию</string>
@@ -26,4 +25,9 @@
     </string-array>
     <string name="extracting">Распаковка:</string>
     <string name="mod">МОД #</string>
+    <string name="install">Установить</string>
+    <string name="variant">Выберите действие</string>
+    <string name="sign">Подписать</string>
+    <string name="signing">Подписание...</string>
+    <string name="signwarn">Для создания подписанного APK необходимо скачать оригинальный APK игры Brawl Stars (%1$s МБ). Продолжить?</string>
 </resources>
