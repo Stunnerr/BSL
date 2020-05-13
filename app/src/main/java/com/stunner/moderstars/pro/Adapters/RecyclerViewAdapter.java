@@ -48,39 +48,47 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
         final ListParent title = (ListParent) o;
         title.setCurholder(holder);
         parents.add(title);
-        //Log.i(ActivityPro.TAG,"parent id:" +String.valueOf(i)+ " name:" + title.getTitle() + " obj:" + o.toString());
         holder._textView.setText(title.getTitle());
-        holder._checkBox.setChecked(UsefulThings.checked.indexOf(title)!=-1);
+        holder._checkBox.setChecked(UsefulThings.checked.indexOf(title) != -1);
         if (((ListParent) o).getPath().isDirectory()) {
             holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (UsefulThings.checked.indexOf(title)==-1) {
-                        holder._checkBox.setChecked(true);
-                        UsefulThings.checked.add(title);
-                        for (Object x:title.getChildObjectList()) {
-                            ListChild child = (ListChild) x;
-                            if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
-                            UsefulThings.checked.add(child);
-                        }
-                    } else {holder._checkBox.setChecked(false);
-                        UsefulThings.checked.remove(title);}
-                    return true;
-                }}
+                                                     @Override
+                                                     public boolean onLongClick(View v) {
+                                                         if (UsefulThings.checked.indexOf(title) == -1) {
+                                                             holder._checkBox.setChecked(true);
+                                                             UsefulThings.checked.add(title);
+                                                             for (Object x : title.getChildObjectList()) {
+                                                                 ListChild child = (ListChild) x;
+                                                                 if (child.getCurholder() != null)
+                                                                     child.getCurholder().checkBox1.setChecked(true);
+                                                                 UsefulThings.checked.add(child);
+                                                             }
+                                                         } else {
+                                                             holder._checkBox.setChecked(false);
+                                                             UsefulThings.checked.remove(title);
+                                                         }
+                                                         return true;
+                                                     }
+                                                 }
             );
             holder._checkBox.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (UsefulThings.checked.indexOf(title)==-1) {
-                        UsefulThings.checked.add(title);
-                        for (Object x:title.getChildObjectList()) {
-                            ListChild child = (ListChild) x;
-                            if(child.getCurholder()!=null) child.getCurholder().checkBox1.setChecked(true);
-                            UsefulThings.checked.add(child);
-                        }
-                    } else UsefulThings.checked.remove(title);
+                                                    @Override
+                                                    public void onClick(View v) {
+                                                        if (UsefulThings.checked.indexOf(title) == -1) {
+                                                            UsefulThings.checked.add(title);
+                                                            for (Object x : title.getChildObjectList()) {
+                                                                ListChild child = (ListChild) x;
+                                                                if (child.getCurholder() != null)
+                                                                    child.getCurholder().checkBox1.setChecked(true);
+                                                                UsefulThings.checked.add(child);
 
-                }}
+                                                            }
+                                                        } else {
+                                                            UsefulThings.checked.remove(title);
+                                                        }
+
+                                                    }
+                                                }
             );
         } else {
             holder.layout.setOnClickListener(new View.OnClickListener() {
@@ -112,31 +120,39 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
         final ListChild title = (ListChild) o;
         final boolean[] d = {false};
         final ListParent[] parent = {null};
-        for (ListParent x: parents) {if(x.getChildObjectList().indexOf(title)!=-1) {parent[0]=x;break;}}
+        for (ListParent x : parents) {
+            if (x.getChildObjectList().indexOf(title) != -1) {
+                parent[0] = x;
+                break;
+            }
+        }
         title.setCurholder(holder);
         holder.option1.setText(title.getOption1());
-        //Log.i(ActivityPro.TAG, "child id:" + String.valueOf(i) + " name:" + title.getOption1() + " obj:" + o.toString() + " Holder:" + holder.toString());
-        holder.checkBox1.setChecked(UsefulThings.checked.indexOf(title)!=-1);
+        holder.checkBox1.setChecked(UsefulThings.checked.indexOf(title) != -1);
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (UsefulThings.checked.indexOf(title) == -1)
-                {
+                if (UsefulThings.checked.indexOf(title) == -1) {
                     holder.checkBox1.setChecked(true);
                     UsefulThings.checked.add(title);
-                    for (Object x:parent[0].getChildObjectList()){
+                    for (Object x : parent[0].getChildObjectList()) {
                         ListChild child = (ListChild) x;
-                        if (UsefulThings.checked.indexOf(child)!=-1)d[0]=true;
-                        else  {d[0]=false;break;}
+                        if (UsefulThings.checked.indexOf(child) != -1) d[0] = true;
+                        else {
+                            d[0] = false;
+                            break;
+                        }
                     }
-                    if (d[0]) {parent[0].getCurholder()._checkBox.setChecked(true);
-                        UsefulThings.checked.add(parent[0]);}
+                    if (d[0]) {
+                        parent[0].getCurholder()._checkBox.setChecked(true);
+                        UsefulThings.checked.add(parent[0]);
 
-                }
-                else {
+                    }
+
+                } else {
                     holder.checkBox1.setChecked(false);
                     UsefulThings.checked.remove(title);
-                    if (UsefulThings.checked.indexOf(parent[0])!=-1){
+                    if (UsefulThings.checked.indexOf(parent[0]) != -1) {
                         UsefulThings.checked.remove(parent[0]);
                         parent[0].getCurholder()._checkBox.setChecked(false);
                     }
@@ -146,21 +162,24 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
         holder.checkBox1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (UsefulThings.checked.indexOf(title) == -1)
-                {
+                if (UsefulThings.checked.indexOf(title) == -1) {
                     UsefulThings.checked.add(title);
-                    for (Object x:parent[0].getChildObjectList()){
+                    for (Object x : parent[0].getChildObjectList()) {
                         ListChild child = (ListChild) x;
-                        if (UsefulThings.checked.indexOf(child)!=-1)d[0]=true;
-                        else  {d[0]=false;break;}
+                        if (UsefulThings.checked.indexOf(child) != -1) d[0] = true;
+                        else {
+                            d[0] = false;
+                            break;
+                        }
                     }
-                    if (d[0]) {parent[0].getCurholder()._checkBox.setChecked(true);
-                        UsefulThings.checked.add(parent[0]);}
+                    if (d[0]) {
+                        parent[0].getCurholder()._checkBox.setChecked(true);
+                        UsefulThings.checked.add(parent[0]);
+                    }
 
-                }
-                else {
+                } else {
                     UsefulThings.checked.remove(title);
-                    if (UsefulThings.checked.indexOf(parent[0])!=-1){
+                    if (UsefulThings.checked.indexOf(parent[0]) != -1) {
                         UsefulThings.checked.remove(parent[0]);
                         parent[0].getCurholder()._checkBox.setChecked(false);
                     }
@@ -173,8 +192,6 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
     public Bundle onSaveInstanceState(Bundle savedInstanceStateBundle) {
         return super.onSaveInstanceState(savedInstanceStateBundle);
     }
-
-
 
 
 }
