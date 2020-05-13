@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -27,22 +28,26 @@ import com.stunner.moderstars.pro.Adapters.RecyclerViewAdapter;
 import com.stunner.moderstars.pro.Models.ListChild;
 import com.stunner.moderstars.pro.Models.ListParent;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,10 +60,76 @@ import static com.stunner.moderstars.UsefulThings.TAG;
 import static com.stunner.moderstars.UsefulThings.bspath;
 import static com.stunner.moderstars.UsefulThings.checked;
 import static com.stunner.moderstars.UsefulThings.copy;
+import static com.stunner.moderstars.UsefulThings.crashlytics;
+import static com.stunner.moderstars.UsefulThings.root;
 import static com.stunner.moderstars.UsefulThings.sudo;
 
 public class ActivityPro extends AppCompatActivity {
+    @SuppressLint("StaticFieldLeak")
+    public static Context ctx;
+    static boolean access;
+    static TabsAdapter mTabsAdapter;
+    static TabLayout mTabLayout;
+    static ViewPager mViewPager;
+    static FloatingActionButton fab;
+    static FragmentManager fragmentManager;
+    static int a = -10;
     int perms = 0;
+    String[] supportedMimeTypes = {"application/zip", "application/vnd.android.package-archive"};
+    String bsapk = "", size = "100";
+    View.OnClickListener listeneraccess = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+            builder.setTitle("BSL.Install").setMessage(R.string.variant);
+            builder.setPositiveButton(R.string.sign, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists()) {
+                        try {
+                            AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
+                            builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
+                            builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                                    Uri uri = Uri.parse(bsapk);
+                                    DownloadManager.Request request = new DownloadManager.Request(uri);
+                                    request.setTitle("Brawl Stars.apk");
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                    request.setVisibleInDownloadsUi(false);
+                                    request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
+                                    downloadmanager.enqueue(request);
+                                }
+                            });
+                            builder1.setNegativeButton(R.string.no, null);
+                            builder1.setCancelable(true).setOnCancelListener(null).show();
+                        } catch (Exception e) {
+                            crashlytics.recordException(e);
+                            Log.e(TAG, "Exception", e);
+                        }
+                    } else {
+                        new UsefulThings.Signer().execute("");
+                    }
+                }
+            });
+            builder.setNegativeButton(R.string.install, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    new Deploy().execute();
+                }
+            });
+            builder.create().show();
+        }
+    };
+
+    public static void showSnackBar(String text) {
+        Snackbar snackbar = Snackbar.make(fab, text, LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE);
+        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) snackbar.getView().getLayoutParams();
+        params.setMargins(0, 0, 0, 0);
+        snackbar.getView().setLayoutParams(params);
+        snackbar.show();
+    }
 
     private void requestAppPermissions() {
         if (hasReadPermissions() && hasWritePermissions()) {
@@ -71,22 +142,12 @@ public class ActivityPro extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
     }
 
-    @SuppressLint("StaticFieldLeak")
-    public static Context ctx;
-    static TabsAdapter mTabsAdapter;
-    static TabLayout mTabLayout;
-    static ViewPager mViewPager;
-    static FloatingActionButton[] fab;
-    static CardView[] cardViews;
-    static FragmentManager fragmentManager;
-
     public boolean granted(int[] results) {
         for (int a : results) {
             if (a != PackageManager.PERMISSION_GRANTED) return false;
         }
         return true;
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -115,9 +176,6 @@ public class ActivityPro extends AppCompatActivity {
         return (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
     }
 
-    static int a = -10;
-    boolean menu = false;
-
     public void restore() {
         try {
             copy(bspath + "update/", bspath + "update2/");
@@ -137,40 +195,6 @@ public class ActivityPro extends AppCompatActivity {
         return true;
     }
 
-    String[] supportedMimeTypes = {"application/zip", "application/vnd.android.package-archive"};
-
-    private void togglemenu(final int c) {
-        Runnable open = new Runnable() {
-            @Override
-            public void run() {
-                cardViews[0].animate().setInterpolator(new FastOutSlowInInterpolator()).alpha(2);
-                cardViews[1].animate().setInterpolator(new FastOutSlowInInterpolator()).alpha(1);
-            }
-        };
-        Runnable close = new Runnable() {
-            @Override
-            public void run() {
-                fab[0].animate().setInterpolator(new FastOutSlowInInterpolator()).rotation(0);
-                fab[1].animate().setInterpolator(new FastOutSlowInInterpolator()).translationY(0).alpha(0);
-                fab[2].animate().setInterpolator(new FastOutSlowInInterpolator()).translationY(0).alpha(0);
-            }
-        };
-        if (!menu) {
-            fab[0].animate().setInterpolator(new FastOutSlowInInterpolator()).rotation(45);
-            fab[1].animate().setInterpolator(new FastOutSlowInInterpolator()).translationY(-getResources().getDimension(R.dimen.standard_55)).alpha(2).withStartAction(open);
-            if (c == 2) {
-                fab[2].animate().setInterpolator(new FastOutSlowInInterpolator()).translationY(-getResources().getDimension(R.dimen.standard_105)).alpha(1);
-            }
-            //open.run();
-        } else {
-            cardViews[0].animate().setInterpolator(new FastOutSlowInInterpolator()).alpha(0);
-            cardViews[1].animate().setInterpolator(new FastOutSlowInInterpolator()).alpha(0).withStartAction(close);
-
-            //close.run();
-        }
-        menu = !menu;
-    }
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -179,47 +203,15 @@ public class ActivityPro extends AppCompatActivity {
                 break;
 
             case R.id.action_about:
-                //startActivity(new Intent(this, ActivityAbout.class));
-                final ProgressDialog pd = new ProgressDialog(ctx);
-                Runnable target = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            //Main.main(getExternalFilesDir(null) + "/sign", getExternalFilesDir(null) + "/in.apk", getExternalFilesDir(null) + "/out.apk");
-                            //pd.dismiss();
-                            DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-                            Uri uri = Uri.parse("https://apkpure.com/ru/brawl-stars-android/com.supercell.brawlstars/download?from=details");
-                            DownloadManager.Request request = new DownloadManager.Request(uri);
-                            request.setTitle("Brawl Stars APK");
-                            request.setDescription("Downloading");
-                            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                            request.setVisibleInDownloadsUi(false);
-                            request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/myfile.apk"));
-                            downloadmanager.enqueue(request);
-                        } catch (Exception e) {
-                            Log.e(TAG, "onOptionsItemSelected: ", e);
-                        }
-                    }
-                };
-                Thread thread = new Thread(target);
-                try {
-                    UsefulThings.calculateSHA(new FileInputStream(new File(getExternalFilesDir(null) + "/myfile.apk")));
-                } catch (Exception ignore) {
-                }
-                thread.start();
-                pd.setCancelable(false);
-                pd.setCanceledOnTouchOutside(false);
-                pd.setTitle("BSL");
-                pd.setMessage("Signing...");
-                pd.show();
+                startActivity(new Intent(this, ActivityAbout.class));
                 break;
 
             case R.id.action_add:
-                Choosezip();
+                choosezip();
                 break;
             case R.id.action_restore:
                 restore();
-                Snackbar.make(findViewById(R.id.pro_root), getText(R.string.restored), LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).show();
+                showSnackBar((String) getText(R.string.restored));
                 break;
             case R.id.action_alpha:
                 startActivity(new Intent(getApplicationContext(), ActivityPro.class));
@@ -234,48 +226,54 @@ public class ActivityPro extends AppCompatActivity {
         requestAppPermissions();
         setContentView(R.layout.activity_pro);
         Toolbar toolbar = findViewById(R.id.toolbar);
-        fab = new FloatingActionButton[]{findViewById(R.id.fab), findViewById(R.id.fab1), findViewById(R.id.fab2)};
-        cardViews = new CardView[]{findViewById(R.id.fab1_ttp), findViewById(R.id.fab2_ttp)};
-        fab[0].setOnClickListener(new View.OnClickListener() {
+        fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Choosezip();
-            }
-        });
-        fab[1].setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                togglemenu(1);
-                Choosezip();
-            }
-        });
-        fab[2].setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                togglemenu(2);
-                new Deploy().execute();
+                choosezip();
             }
         });
         mViewPager = findViewById(R.id.viewpager);
         mTabLayout = findViewById(R.id.tabs);
-        mTabLayout.setVisibility(View.INVISIBLE);
+        mTabsAdapter = new TabsAdapter(getSupportFragmentManager());
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL("https://pastebin.com/raw/xStDu04p");
+                    URLConnection urlConnection = url.openConnection();
+                    urlConnection.setConnectTimeout(5000);
+                    urlConnection.setReadTimeout(5000);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stringBuilder.append(line);
+                    }
+                    bsapk = stringBuilder.toString();
+                    size = new DecimalFormat("#.##").format((double) new URL(bsapk).openConnection().getContentLength() / 1048576);
+                } catch (Exception e) {
+                    crashlytics.recordException(e);
+                }
+            }
+        };
+        new Thread(runnable).start();
+        mViewPager.setAdapter(mTabsAdapter);
+        mTabLayout.setupWithViewPager(mViewPager);
         setSupportActionBar(toolbar);
         toolbar.inflateMenu(R.menu.menu_release);
         bspath = getFilesDir().getAbsolutePath().split(getPackageName())[0] + "com.supercell.brawlstars/";
-        mTabsAdapter = new TabsAdapter(getSupportFragmentManager());
-        try {
-            a = mTabsAdapter.getCount();
-        } catch (NullPointerException e) {
-            a = -10;
-        }
-        if (a > 0) {
-            mViewPager.setAdapter(mTabsAdapter);
-            mTabLayout.setupWithViewPager(mViewPager);
-            mTabLayout.setVisibility(View.VISIBLE);
-            fab[0].setOnClickListener(new View.OnClickListener() {
+        root = getIntent().getBooleanExtra("root", false);
+        if (!root) UsefulThings.su = "";
+        access = getIntent().getBooleanExtra("access", false);
+        if (mTabsAdapter.getCount() > 0) {
+            fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
+            if (access || root)
+                fab.setOnClickListener(listeneraccess);
+            else fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    togglemenu(2);
+                    new UsefulThings.Signer().execute();
                 }
             });
         }
@@ -301,11 +299,11 @@ public class ActivityPro extends AppCompatActivity {
         requestAppPermissions();
         super.onResume();
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case 13:
-
                 if (resultCode == RESULT_OK) {
                     String[] paths;
                     if (null != data.getClipData()) { // checking multiple selection or not
@@ -333,7 +331,7 @@ public class ActivityPro extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void Choosezip() {
+    private void choosezip() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_MIME_TYPES, supportedMimeTypes);
@@ -344,15 +342,17 @@ public class ActivityPro extends AppCompatActivity {
             startActivityForResult(
                     Intent.createChooser(intent, "Выберите архив мода"),
                     13);
-        } catch (android.content.ActivityNotFoundException ex) {
+        } catch (android.content.ActivityNotFoundException e) {
+            crashlytics.recordException(e);
             Toast.makeText(this, "Установите файловый менеджер!",
                     Toast.LENGTH_SHORT).show();
         }
     }
 
     public static class TabsFragment extends Fragment {
-        private int mPage;
         private static final String ARG_PAGE = "section_number";
+        RecyclerViewAdapter adapter;
+        private int mPage;
 
         public TabsFragment() {
         }
@@ -364,8 +364,6 @@ public class ActivityPro extends AppCompatActivity {
             fragment.setArguments(args);
             return fragment;
         }
-
-        RecyclerViewAdapter adapter;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -428,7 +426,7 @@ public class ActivityPro extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             pd = new ProgressDialog(ActivityPro.this);
-            pd.setTitle("BSL");
+            pd.setTitle("BSL.Install");
             pd.setMessage(getString(R.string.installing).replace(":", "..."));
             pd.setCancelable(false);
             pd.setCanceledOnTouchOutside(false);
@@ -440,7 +438,7 @@ public class ActivityPro extends AppCompatActivity {
             try {
                 publishProgress(getString(R.string.backingup));
                 sudo("rm -rf " + bspath + "update1/");
-                copy(bspath + "update/", bspath + "update1/");
+                copy(bspath + "update/", bspath + sudo("ls " + bspath + " "));
                 sudo("rm -rf " + bspath + "update/");
                 for (Object o : checked) {
                     if (o.getClass().equals(ListParent.class)) {
@@ -473,7 +471,7 @@ public class ActivityPro extends AppCompatActivity {
         @Override
         protected void onCancelled(String aVoid) {
             pd.dismiss();
-            Snackbar.make(findViewById(R.id.pro_root), "", LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).setText(aVoid).show();
+            showSnackBar("Cancelled");
             super.onCancelled(aVoid);
         }
 
@@ -487,7 +485,7 @@ public class ActivityPro extends AppCompatActivity {
         protected void onPostExecute(String aVoid) {
             super.onPostExecute(aVoid);
             pd.dismiss();
-            Snackbar.make(findViewById(R.id.pro_root), (aVoid == null) ? (getString(R.string.success)) : (aVoid), LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE).show();
+            showSnackBar(aVoid == null ? (String) getText(R.string.success) : aVoid);
         }
     }
 
@@ -495,6 +493,31 @@ public class ActivityPro extends AppCompatActivity {
 
         TabsAdapter(FragmentManager fm) {
             super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        }
+
+        @Override
+        public void notifyDataSetChanged() {
+            if (getCount() > 0) {
+                mTabLayout.setVisibility(View.VISIBLE);
+                fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
+                if (access || root)
+                    fab.setOnClickListener(listeneraccess);
+                else fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new UsefulThings.Signer().execute();
+                    }
+                });
+            } else {
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        choosezip();
+                    }
+                });
+                mTabLayout.setVisibility(View.INVISIBLE);
+            }
+            super.notifyDataSetChanged();
         }
 
         @NonNull

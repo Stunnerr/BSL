@@ -6,6 +6,11 @@ import android.os.AsyncTask;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.stunner.moderstars.pro.Models.ListChild;
+import com.stunner.moderstars.pro.Models.ListParent;
+import com.stunner.moderstars.signer.apksigner.Main;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,6 +18,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -25,10 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import stunner.moderstars.R;
 
 import static com.stunner.moderstars.ActivityPro.ctx;
+import static com.stunner.moderstars.ActivityPro.showSnackBar;
 
 public class UsefulThings {
     static final String TAG = "BSL";
@@ -40,10 +49,14 @@ public class UsefulThings {
             return b.compareTo(a);
         }
     };
-    static Unzipper unzipper = new Unzipper();
-    private static ProgressDialog pd;
+    public static FirebaseCrashlytics crashlytics;
     public static List<Object> checked = new ArrayList<>();
+    static boolean root = false;
+    static String su = "su -c ";
     static String bspath;
+    static byte[] output;
+    private static ProgressDialog pd;
+    private static Runtime process;
 
     static File[] filelist(File folder) {
         File[] files = folder.listFiles();
@@ -52,8 +65,6 @@ public class UsefulThings {
         return files;
 
     }
-
-    private static Runtime process;
 
     private static String trimsome(String s) {
         //Log.d(TAG, s);
@@ -72,7 +83,7 @@ public class UsefulThings {
         return s1.endsWith("/") ? (s1) : (s1 + "/");
     }
 
-    private static String calculateSHA(InputStream is) {
+    public static String calculateSHA(InputStream is) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-1");
@@ -81,7 +92,6 @@ public class UsefulThings {
             Log.e(TAG, "Exception while getting digest", e);
             return null;
         }
-
 
         byte[] buffer = new byte[8192];
         int read;
@@ -106,15 +116,13 @@ public class UsefulThings {
         }
     }
 
-    static byte[] output;
-
     static String sudo(String cmd) {
         output = new byte[256];
         if (process == null) {
             process = Runtime.getRuntime();
         }
         try {
-            new DataInputStream(process.exec("su -c " + cmd).getInputStream()).readFully(output);
+            new DataInputStream(process.exec(su + cmd).getInputStream()).readFully(output);
             return new String(output);
         } catch (Exception e) {
             e.printStackTrace();
@@ -127,14 +135,10 @@ public class UsefulThings {
         if (process == null) {
             process = Runtime.getRuntime();
         }
-
-
         try {
-            Log.d(TAG, "su -c cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "");
-            new DataInputStream(process.exec("su -c cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "").getInputStream()).readFully(output);
-            Log.d(TAG, "copy out: " + new String(output));
+            new DataInputStream(process.exec(su + "cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "").getInputStream()).readFully(output);
         } catch (Exception e) {
-            e.printStackTrace();
+            crashlytics.recordException(e);
         }
 
     }
@@ -157,10 +161,11 @@ public class UsefulThings {
             process = Runtime.getRuntime();
         }
         try {
-            new DataInputStream(process.exec("su -c cp -r " + src + " " + dst + "").getInputStream()).readFully(output);
+            if (root)
+                new DataInputStream(process.exec(su + "cp -r " + src + " " + dst + "").getInputStream()).readFully(output);
             Log.d(TAG, "copy out: " + new String(output));
         } catch (Exception e) {
-            e.printStackTrace();
+            crashlytics.recordException(e);
         }
 
     }
@@ -189,6 +194,83 @@ public class UsefulThings {
         return mods;
     }
 
+    public static class Signer extends AsyncTask<String, String, String> {
+        @Override
+        protected void onPreExecute() {
+            pd = new ProgressDialog(ctx);
+            pd.setCancelable(false);
+            pd.setCanceledOnTouchOutside(false);
+            pd.setTitle("BSL.Install");
+            pd.setMessage(ctx.getString(R.string.installing).replace(":", "..."));
+            pd.show();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            try {
+                ZipInputStream zin = new ZipInputStream(new FileInputStream(ctx.getExternalFilesDir(null) + "/bs_original.apk"));
+                ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(ctx.getExternalFilesDir(null) + "/bs_mod_unsigned.apk"));
+                ZipEntry ze;
+                boolean flag;
+                while ((ze = zin.getNextEntry()) != null) {
+                    try {
+                        flag = false;
+                        zout.putNextEntry(new ZipEntry(ze.getName()));
+                        if (ze.getName().contains("assets/")) {
+                            for (Object z : checked) {
+                                String x = z.getClass() == ListChild.class ? ((ListChild) z).getforcopy() : ((ListParent) z).getforcopy();
+                                if (x.matches(ctx.getExternalFilesDir(null) + "/(\\d+)/" + ze.getName().replace("assets/", ""))) {
+                                    FileInputStream fis = new FileInputStream(x);
+                                    ZipEntry entry = new ZipEntry(x);
+                                    zout.putNextEntry(entry);
+                                    publishProgress(ctx.getString(R.string.installing) + x);
+                                    byte[] buffer = new byte[16384];
+                                    while (fis.read(buffer) != -1) {
+                                        zout.write(buffer);
+                                    }
+                                    zout.closeEntry();
+                                    break;
+                                }
+                                flag = true;
+                            }
+                            if (flag) continue;
+                        }
+                        if (ze.getName().contains("META-INF")) continue;
+                        publishProgress(ctx.getString(R.string.installing) + ze.getName());
+                        byte[] buffer = new byte[16384];
+                        while (zin.read(buffer) != -1) zout.write(buffer);
+                        zout.closeEntry();
+                    } catch (Exception e) {
+                        crashlytics.recordException(e);
+                        publishProgress(e.getMessage());
+                    }
+                }
+                publishProgress(ctx.getString(R.string.signing));
+                String[] strings1 = new String[3];
+                strings1[0] = ctx.getExternalFilesDir(null) + "/sign";
+                strings1[1] = ctx.getExternalFilesDir(null) + "/bs_mod_unsigned.apk";
+                strings1[2] = ctx.getExternalFilesDir(null) + "/bs_mod_signed.apk";
+                Main.main(strings1);
+            } catch (Exception e) {
+                crashlytics.recordException(e);
+                Log.e(TAG, "Signing: ", e);
+                //e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            pd.setMessage(values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String ret) {
+            pd.dismiss();
+            showSnackBar(ret == null ? ctx.getString(R.string.success) : ret);
+        }
+    }
+
     public static class Unzipper extends AsyncTask<String, String, Void> {
 
         @Override
@@ -203,117 +285,120 @@ public class UsefulThings {
 
         @Override
         protected Void doInBackground(String... zapk) {
-            String str = zapk[0];
-            try (ZipFile zip = new ZipFile(zapk[0])) {
-                if (zip.getEntry("classes.dex") != null) {
-                    if (zip.getEntry("assets/fingerprint.json") != null) {//unapk
+            for (String str : zapk) {
+                publishProgress(str);
+                try (ZipFile zip = new ZipFile(str)) {
+                    if (zip.getEntry("classes.dex") != null) {
+                        if (zip.getEntry("assets/fingerprint.json") != null) {//unapk
+                            try {
+                                File file = new File(str);
+                                int b = checkmods(ctx).length;
+                                ctx.getExternalFilesDir(null).mkdirs();
+//             unzip-start
+                                ZipFile zipFile = new ZipFile(file);
+                                Enumeration entries = zipFile.entries();
+                                ZipEntry zipEntry = zipFile.getEntry("assets/fingerprint.json");
+                                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Temp/" + b + "/" + zipEntry.getName().replace("assets/", "")));
+                                file2.getParentFile().mkdirs();
+                                StringBuilder json = new StringBuilder();
+                                BufferedInputStream bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                byte[] bArr = new byte[8192];
+                                BufferedOutputStream bufferedOutputStream;
+                                while (true) {
+                                    int read = bufferedInputStream.read(bArr);
+                                    if (read == -1) {
+                                        break;
+                                    }
+                                    json.append(new String(bArr));
+                                }
+                                bufferedInputStream.close();
+                                File folder = file2.getParentFile();
+                                JSONObject jsonObject = new JSONObject(json.toString());
+                                JSONArray files = jsonObject.getJSONArray("files");
+                                // List<Pair<String,String>> list = new ArrayList<>();
+                                Map<String, String> list = new ArrayMap<>();
+                                for (int i = 0; i < files.length(); ++i) {
+                                    list.put(files.getJSONObject(i).getString("file").replace("\\/", "/"), files.getJSONObject(i).getString("sha"));
+                                }
+                                while (entries.hasMoreElements()) {
+                                    zipEntry = (ZipEntry) entries.nextElement();
+                                    if (!zipEntry.getName().contains("assets/")) continue;
+                                    file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace("assets/", "")));
+                                    if (zipEntry.isDirectory()) continue;
+                                    if (zipEntry.getName().replace(trimsome(zipEntry.getName()), "").equals(zipEntry.getName()))
+                                        continue;
+                                    if (zipEntry.getName().contains("fingerprint.json")) continue;
+                                    //Log.d(TAG, "Extracting " + file2);
+                                    bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                    try {
+                                        if (list.get(zipEntry.getName().replace("assets/", "")).equals(calculateSHA(bufferedInputStream)))
+                                            continue;
+                                    } catch (NullPointerException ignored) {
+                                    }
+
+                                    publishProgress(zipEntry.getName());
+                                    file2.getParentFile().mkdirs();
+                                    bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                    bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file2), 8192);
+                                    while (true) {
+                                        int read = bufferedInputStream.read(bArr);
+                                        if (read == -1) {
+                                            break;
+                                        }
+                                        bufferedOutputStream.write(bArr);
+                                    }
+                                    bufferedOutputStream.flush();
+                                    bufferedOutputStream.close();
+                                    bufferedInputStream.close();
+                                }
+
+                            } catch (Exception e) {
+                                crashlytics.recordException(e);
+                                Log.e(TAG, "Error: " + e);
+                            }
+                        } else {
+                            cancel(true);
+                            return null;
+                        }
+                    } else {//unzip
                         try {
                             File file = new File(str);
                             int b = checkmods(ctx).length;
-                            ctx.getExternalFilesDir(null).mkdirs();
-//             unzip-start
+                            new File(ctx.getExternalFilesDir(null).getAbsolutePath()).mkdirs();
                             ZipFile zipFile = new ZipFile(file);
                             Enumeration entries = zipFile.entries();
-                            ZipEntry zipEntry = zipFile.getEntry("assets/fingerprint.json");
-                            File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Temp/" + b + "/" + zipEntry.getName().replace("assets/", "")));
-                            file2.getParentFile().mkdirs();
-                            StringBuilder json = new StringBuilder();
-                            BufferedInputStream bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                            byte[] bArr = new byte[8192];
-                            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file2), 1024);
-                            while (true) {
-                                int read = bufferedInputStream.read(bArr, 0, 8192);
-                                if (read == -1) {
-                                    break;
-                                }
-                                json.append(new String(bArr));
-                            }
-                            bufferedOutputStream.flush();
-                            bufferedOutputStream.close();
-                            bufferedInputStream.close();
-                            File folder = file2.getParentFile();
-                            JSONObject jsonObject = new JSONObject(json.toString());
-                            JSONArray files = jsonObject.getJSONArray("files");
-                            // List<Pair<String,String>> list = new ArrayList<>();
-                            Map<String, String> list = new ArrayMap<>();
-                            for (int i = 0; i < files.length(); ++i) {
-                                list.put(files.getJSONObject(i).getString("file").replace("\\/", "/"), files.getJSONObject(i).getString("sha"));
-                            }
                             while (entries.hasMoreElements()) {
-                                zipEntry = (ZipEntry) entries.nextElement();
-                                if (!zipEntry.getName().contains("assets/")) continue;
-                                file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace("assets/", "")));
-                                if (zipEntry.isDirectory()) continue;
-                                if (zipEntry.getName().replace(trimsome(zipEntry.getName()), "").equals(zipEntry.getName()))
-                                    continue;
-                                //Log.d(TAG, "Extracting " + file2);
-                                bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                try {
-                                    if (list.get(zipEntry.getName().replace("assets/", "")).equals(calculateSHA(bufferedInputStream)))
-                                        continue;
-                                } catch (NullPointerException ignored) {
-                                }
+                                ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+                                //Log.d(TAG, "ZE: " + zipEntry.getName());
                                 publishProgress(zipEntry.getName());
+                                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace(trimsome(zipEntry.getName()), "")));
                                 file2.getParentFile().mkdirs();
-                                bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file2), 8192);
-                                while (true) {
-                                    int read = bufferedInputStream.read(bArr, 0, 8192);
-                                    if (read == -1) {
-                                        break;
+                                if (!zipEntry.isDirectory()) {
+                                    Log.d(TAG, "Extracting " + file2);
+                                    BufferedInputStream bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                    byte[] bArr = new byte[1024];
+                                    BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file2), 1024);
+                                    while (true) {
+                                        int read = bufferedInputStream.read(bArr);
+                                        if (read == -1) {
+                                            break;
+                                        }
+                                        bufferedOutputStream.write(bArr);
                                     }
-                                    bufferedOutputStream.write(bArr, 0, read);
+                                    bufferedOutputStream.flush();
+                                    bufferedOutputStream.close();
+                                    bufferedInputStream.close();
                                 }
-                                bufferedOutputStream.flush();
-                                bufferedOutputStream.close();
-                                bufferedInputStream.close();
                             }
-                            //unzip-end temp copy-start
-                            Log.d(TAG, "doInBackground: cleared");
-
                         } catch (Exception e) {
-                            Log.e(TAG, "Error: " + e);
-                        }
-                    } else {
-                        cancel(true);
-                        return null;
+                            crashlytics.recordException(e);
+                            Log.e(TAG, "Error :" + e);
+                        }//unzip-end
                     }
-                } else {//unzip
-                    try {
-                        File file = new File(str);
-                        int b = checkmods(ctx).length;
-                        new File(ctx.getExternalFilesDir(null).getAbsolutePath()).mkdirs();
-                        ZipFile zipFile = new ZipFile(file);
-                        Enumeration entries = zipFile.entries();
-                        while (entries.hasMoreElements()) {
-                            ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                            //Log.d(TAG, "ZE: " + zipEntry.getName());
-                            publishProgress(zipEntry.getName());
-                            File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace(trimsome(zipEntry.getName()), "")));
-                            file2.getParentFile().mkdirs();
-                            if (!zipEntry.isDirectory()) {
-                                Log.d(TAG, "Extracting " + file2);
-                                BufferedInputStream bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                byte[] bArr = new byte[1024];
-                                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file2), 1024);
-                                while (true) {
-                                    int read = bufferedInputStream.read(bArr, 0, 1024);
-                                    if (read == -1) {
-                                        break;
-                                    }
-                                    bufferedOutputStream.write(bArr, 0, read);
-                                }
-                                bufferedOutputStream.flush();
-                                bufferedOutputStream.close();
-                                bufferedInputStream.close();
-                            }
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error :" + e);
-                    }//unzip-end
+                } catch (Exception e) {
+                    crashlytics.recordException(e);
+                    Log.e(TAG, "doInBackground: ", e);
                 }
-            } catch (Exception e) {
-                Log.e(TAG, "doInBackground: ", e);
             }
             return null;
         }
