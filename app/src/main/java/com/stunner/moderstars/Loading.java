@@ -9,17 +9,26 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
 import stunner.moderstars.R;
+
+import static com.stunner.moderstars.UsefulThings.TAG;
+import static com.stunner.moderstars.UsefulThings.crashlytics;
+
 public class Loading extends AppCompatActivity {
     TextView text;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        crashlytics = FirebaseCrashlytics.getInstance();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
         Resources res = this.getResources();
@@ -33,7 +42,7 @@ public class Loading extends AppCompatActivity {
             case "-1":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 mode = Configuration.UI_MODE_NIGHT_YES;
-                break;
+
             default:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
@@ -45,31 +54,6 @@ public class Loading extends AppCompatActivity {
         MyTask task = new MyTask();
         task.execute(true);
     }
-
-    private class MyTask extends AsyncTask<Boolean, Boolean, Boolean> {
-        @Override
-        protected Boolean doInBackground(Boolean... root) {
-            root[0] = false;
-            try {
-                root[0] = Getroot(false);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            return root[0];
-        }
-
-        @Override
-        protected void onPostExecute(Boolean root) {
-            if (root) {
-                text.setText(R.string.starting);
-                Intent intent = new Intent(getApplicationContext(), ActivityPro.class);
-                startActivity(intent);
-                finish();
-            } else finishActivity(1);
-        }
-    }
-
 
     boolean Getroot(final boolean att) {
         try {
@@ -84,24 +68,55 @@ public class Loading extends AppCompatActivity {
                 byte[] b = new byte[1024];
                 osRes.read(b);
                 root = new String(b).contains("uid=0(root)");
+            } catch (Exception ignore) {
             }
-            catch (Exception e){System.exit(1);}
             if (root) {
-                Log.i(UsefulThings.TAG, "Rooted!");
+                Log.i(TAG, "Rooted!");
                 return true;
 
             } else {
-                Log.w(UsefulThings.TAG, "Root access rejected");
-                if(att)Getroot(true);
+                Log.w(TAG, "Root access rejected");
+                if (att) Getroot(true);
                 else {
-                    Log.e(UsefulThings.TAG, "Can't get root access");
-                    System.exit(1);
+                    Log.e(TAG, "Can't get root access");
                 }
             }
         } catch (Exception e) {
-            Log.e(UsefulThings.TAG,e.toString());
+            crashlytics.recordException(e);
+            Log.e(TAG, e.toString());
             return false;
         }
         return false;
+    }
+
+    private class MyTask extends AsyncTask<Boolean, Boolean, Boolean> {
+        boolean access;
+
+        @Override
+        protected Boolean doInBackground(Boolean... root) {
+            root[0] = false;
+            try {
+                root[0] = Getroot(false);
+                try {
+                    new File(getFilesDir().getAbsolutePath().replace(getPackageName(), "com.supercell.brawlstars")).list();
+                } catch (Exception ignore) {
+                    access = false;
+                }
+            } catch (Exception e) {
+                crashlytics.recordException(e);
+            }
+
+            return root[0];
+        }
+
+        @Override
+        protected void onPostExecute(Boolean root) {
+            text.setText(R.string.starting);
+            Intent intent = new Intent(getApplicationContext(), ActivityPro.class);
+            intent.putExtra("access", access);
+            intent.putExtra("root", root);
+            startActivity(intent);
+            finish();
+        }
     }
 }
