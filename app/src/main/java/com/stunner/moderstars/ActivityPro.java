@@ -30,6 +30,8 @@ import com.stunner.moderstars.pro.Models.ListParent;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -300,25 +302,46 @@ public class ActivityPro extends AppCompatActivity {
         super.onResume();
     }
 
+    String getPath(Uri uri) {
+        File file = new File(getCacheDir().getAbsolutePath() + "/temp" + getCacheDir().list().length + ".zip");
+        try {
+            getCacheDir().mkdirs();
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            FileOutputStream outputStream = new FileOutputStream(file);
+            int maxBufferSize = 1024 * 1024;
+            int bytesAvailable = inputStream.available();
+            //int bufferSize = 1024;
+            int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+            final byte[] buffers = new byte[bufferSize];
+            while (inputStream.read(buffers) != -1) {
+                outputStream.write(buffers);
+            }
+            inputStream.close();
+            outputStream.close();
+        } catch (Exception e) {
+            crashlytics.recordException(e);
+        }
+        return file.getAbsolutePath();
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case 13:
                 if (resultCode == RESULT_OK) {
                     String[] paths;
-                    if (null != data.getClipData()) { // checking multiple selection or not
+                    if (null != data.getClipData()) {                                                 // checking multiple selection or not
                         paths = new String[data.getClipData().getItemCount()];
                         for (int i = 0; i < data.getClipData().getItemCount(); i++) {
                             Uri uri = data.getClipData().getItemAt(i).getUri();
                             Log.d(TAG, "File Uri: " + uri.toString());
-                            String path = new FileUtils(getApplicationContext()).getPath(uri);
+                            String path = getPath(uri);
                             Log.d(TAG, "onActivityResult: " + path);
                             paths[i] = path;
                         }
                     } else {
                         Uri uri = data.getData();
                         Log.d(TAG, "File Uri: " + uri.toString());
-                        String path = new FileUtils(getApplicationContext()).getPath(uri);
+                        String path = getPath(uri);
                         Log.d(TAG, "onActivityResult: " + path);
                         paths = new String[]{path};
                     }
