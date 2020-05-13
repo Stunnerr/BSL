@@ -17,6 +17,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
+import androidx.loader.content.CursorLoader;
+
+import static com.stunner.moderstars.UsefulThings.crashlytics;
+
 public class FileUtils {
     private static Uri contentUri = null;
 
@@ -185,7 +189,7 @@ public class FileUtils {
                         return cursor.getString(column_index);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    crashlytics.recordException(e);
                 }
             }
         }
@@ -337,16 +341,17 @@ public class FileUtils {
     private String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
         Cursor cursor = null;
         final String column = "_data";
-        final String[] projection = {column};
-
+        String[] proj = {MediaStore.Images.Media.DATA};
         try {
-            cursor = context.getContentResolver().query(uri, projection,
-                    selection, selectionArgs, null);
-
+            CursorLoader loader = new CursorLoader(context, uri, proj, null, null, null);
+            cursor = loader.loadInBackground();
             if (cursor != null && cursor.moveToFirst()) {
-                final int index = cursor.getColumnIndexOrThrow(column);
+                int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
                 return cursor.getString(index);
             }
+        } catch (Exception e) {
+            crashlytics.recordException(e);
+            return new File(uri.getPath()).getAbsolutePath();
         } finally {
             if (cursor != null)
                 cursor.close();
