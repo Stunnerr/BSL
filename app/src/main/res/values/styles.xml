@@ -8,6 +8,7 @@
         <item name="colorAccent">@color/AccentColor</item>
         <item name="colorPrimary">@color/AccentColor</item>
         <item name="colorSecondary">#FFF</item>
+        <item name="fontFamily">@font/roboto</item>
         <item name="colorOnSecondary">@color/white</item>
     </style>
 
@@ -16,6 +17,7 @@
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorPrimary">@color/AccentColor</item>
         <item name="colorPrimaryDark">@color/AccentColor</item>
+        <item name="android:colorBackground">#FFF</item>
         <item name="iconPreferenceColor">#111</item>
     </style>
 
