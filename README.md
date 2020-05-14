@@ -5,5 +5,5 @@ BSL - first Brawl Stars mod loader with file picker.
 - Zip with mod files
 
 ## Output:
-- Mod, installed in Brawl Stars update folder (root)
-- Modded Brawl Stars apk (soon)
+- Mod, installed in Brawl Stars update folder (root or virtual space)
+- Modded Brawl Stars apk 
