@@ -83,6 +83,13 @@ public class UsefulThings {
         return s1.endsWith("/") ? (s1) : (s1 + "/");
     }
 
+    public static String calculateSHA(File f) {
+        try {
+            return calculateSHA(new FileInputStream(f));
+        } catch (Exception ignore) {
+        }
+        return "no";
+    }
     public static String calculateSHA(InputStream is) {
         MessageDigest digest;
         try {
@@ -287,7 +294,7 @@ public class UsefulThings {
         protected Void doInBackground(String... zapk) {
             for (String str : zapk) {
                 publishProgress(str);
-                try (ZipFile zip = new ZipFile(str)) {
+                try (ZipFile zip = new ZipFile(new File(str))) {
                     if (zip.getEntry("classes.dex") != null) {
                         if (zip.getEntry("assets/fingerprint.json") != null) {//unapk
                             try {

@@ -60,6 +60,7 @@ import static com.google.android.material.snackbar.BaseTransientBottomBar.ANIMAT
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
 import static com.stunner.moderstars.UsefulThings.TAG;
 import static com.stunner.moderstars.UsefulThings.bspath;
+import static com.stunner.moderstars.UsefulThings.calculateSHA;
 import static com.stunner.moderstars.UsefulThings.checked;
 import static com.stunner.moderstars.UsefulThings.copy;
 import static com.stunner.moderstars.UsefulThings.crashlytics;
@@ -275,7 +276,32 @@ public class ActivityPro extends AppCompatActivity {
             else fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new UsefulThings.Signer().execute();
+                    if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk")).equals(bsapk.split("\n")[1])) {
+                        try {
+                            AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
+                            builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
+                            builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                                    Uri uri = Uri.parse(bsapk.split("\n")[0]);
+                                    DownloadManager.Request request = new DownloadManager.Request(uri);
+                                    request.setTitle("Brawl Stars.apk");
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                    request.setVisibleInDownloadsUi(false);
+                                    request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
+                                    downloadmanager.enqueue(request);
+                                }
+                            });
+                            builder1.setNegativeButton(R.string.no, null);
+                            builder1.setCancelable(true).setOnCancelListener(null).show();
+                        } catch (Exception e) {
+                            crashlytics.recordException(e);
+                            Log.e(TAG, "Exception", e);
+                        }
+                    } else {
+                        new UsefulThings.Signer().execute("");
+                    }
                 }
             });
         }
@@ -303,16 +329,13 @@ public class ActivityPro extends AppCompatActivity {
     }
 
     String getPath(Uri uri) {
-        File file = new File(getCacheDir().getAbsolutePath() + "/temp" + getCacheDir().list().length + ".zip");
+        File a = new File(getExternalFilesDir(null).getAbsolutePath() + "/temp/");
+        a.mkdirs();
+        File file = new File(getExternalFilesDir(null).getAbsolutePath() + "/temp/temp" + a.list().length + ".zip");
         try {
-            getCacheDir().mkdirs();
             InputStream inputStream = getContentResolver().openInputStream(uri);
             FileOutputStream outputStream = new FileOutputStream(file);
-            int maxBufferSize = 1024 * 1024;
-            int bytesAvailable = inputStream.available();
-            //int bufferSize = 1024;
-            int bufferSize = Math.min(bytesAvailable, maxBufferSize);
-            final byte[] buffers = new byte[bufferSize];
+            final byte[] buffers = new byte[8192];
             while (inputStream.read(buffers) != -1) {
                 outputStream.write(buffers);
             }
@@ -528,7 +551,32 @@ public class ActivityPro extends AppCompatActivity {
                 else fab.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        new UsefulThings.Signer().execute();
+                        if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk")).equals(bsapk.split("\n")[1])) {
+                            try {
+                                AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
+                                builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
+                                builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                                        Uri uri = Uri.parse(bsapk.split("\n")[0]);
+                                        DownloadManager.Request request = new DownloadManager.Request(uri);
+                                        request.setTitle("Brawl Stars.apk");
+                                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                        request.setVisibleInDownloadsUi(false);
+                                        request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
+                                        downloadmanager.enqueue(request);
+                                    }
+                                });
+                                builder1.setNegativeButton(R.string.no, null);
+                                builder1.setCancelable(true).setOnCancelListener(null).show();
+                            } catch (Exception e) {
+                                crashlytics.recordException(e);
+                                Log.e(TAG, "Exception", e);
+                            }
+                        } else {
+                            new UsefulThings.Signer().execute("");
+                        }
                     }
                 });
             } else {
