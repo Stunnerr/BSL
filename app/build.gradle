@@ -14,8 +14,8 @@ android {
         applicationId "com.stunner.moderstars"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 9
-        versionName "1.2"
+        versionCode 10
+        versionName "1.2.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
