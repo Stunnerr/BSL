@@ -301,7 +301,6 @@ public class UsefulThings {
                                 File file = new File(str);
                                 int b = checkmods(ctx).length;
                                 ctx.getExternalFilesDir(null).mkdirs();
-//             unzip-start
                                 ZipFile zipFile = new ZipFile(file);
                                 Enumeration entries = zipFile.entries();
                                 ZipEntry zipEntry = zipFile.getEntry("assets/fingerprint.json");
@@ -322,12 +321,12 @@ public class UsefulThings {
                                 File folder = file2.getParentFile();
                                 JSONObject jsonObject = new JSONObject(json.toString());
                                 JSONArray files = jsonObject.getJSONArray("files");
-                                // List<Pair<String,String>> list = new ArrayList<>();
                                 Map<String, String> list = new ArrayMap<>();
                                 for (int i = 0; i < files.length(); ++i) {
                                     list.put(files.getJSONObject(i).getString("file").replace("\\/", "/"), files.getJSONObject(i).getString("sha"));
                                 }
                                 while (entries.hasMoreElements()) {
+                                    publishProgress("Seaching for changed files");
                                     zipEntry = (ZipEntry) entries.nextElement();
                                     if (!zipEntry.getName().contains("assets/")) continue;
                                     file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace("assets/", "")));
@@ -335,7 +334,6 @@ public class UsefulThings {
                                     if (zipEntry.getName().replace(trimsome(zipEntry.getName()), "").equals(zipEntry.getName()))
                                         continue;
                                     if (zipEntry.getName().contains("fingerprint.json")) continue;
-                                    //Log.d(TAG, "Extracting " + file2);
                                     bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                                     try {
                                         if (list.get(zipEntry.getName().replace("assets/", "")).equals(calculateSHA(bufferedInputStream)))

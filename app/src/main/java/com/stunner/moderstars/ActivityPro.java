@@ -88,7 +88,8 @@ public class ActivityPro extends AppCompatActivity {
             builder.setPositiveButton(R.string.sign, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists()) {
+                    String sha = calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk"));
+                    if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !sha.equals(bsapk.split("\n")[1].toLowerCase())) {
                         try {
                             AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
                             builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
@@ -123,6 +124,40 @@ public class ActivityPro extends AppCompatActivity {
                 }
             });
             builder.create().show();
+        }
+    };
+    View.OnClickListener listenernoaccess = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String sha = calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk"));
+            if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !sha.equals(bsapk.split("\n")[1].toLowerCase()
+            )) {
+                try {
+                    AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
+                    builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
+                    builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                            Uri uri = Uri.parse(bsapk);
+                            DownloadManager.Request request = new DownloadManager.Request(uri);
+                            request.setTitle("Brawl Stars.apk");
+                            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                            request.setVisibleInDownloadsUi(false);
+                            request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
+                            downloadmanager.enqueue(request);
+                        }
+                    });
+                    builder1.setNegativeButton(R.string.no, null);
+                    builder1.setCancelable(true).setOnCancelListener(null).show();
+                } catch (Exception e) {
+                    crashlytics.recordException(e);
+                    Log.e(TAG, "Exception", e);
+                }
+            } else {
+                new UsefulThings.Signer().execute("");
+            }
+
         }
     };
 
@@ -251,10 +286,10 @@ public class ActivityPro extends AppCompatActivity {
                     StringBuilder stringBuilder = new StringBuilder();
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        stringBuilder.append(line);
+                        stringBuilder.append(line + "\n");
                     }
                     bsapk = stringBuilder.toString();
-                    size = new DecimalFormat("#.##").format((double) new URL(bsapk).openConnection().getContentLength() / 1048576);
+                    size = new DecimalFormat("#.##").format((double) new URL(bsapk.split("\n")[0]).openConnection().getContentLength() / 1048576);
                 } catch (Exception e) {
                     crashlytics.recordException(e);
                 }
@@ -270,40 +305,12 @@ public class ActivityPro extends AppCompatActivity {
         if (!root) UsefulThings.su = "";
         access = getIntent().getBooleanExtra("access", false);
         if (mTabsAdapter.getCount() > 0) {
-            fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
+            mTabsAdapter.notifyDataSetChanged();
+            /*            fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
             if (access || root)
                 fab.setOnClickListener(listeneraccess);
-            else fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk")).equals(bsapk.split("\n")[1])) {
-                        try {
-                            AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
-                            builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
-                            builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-                                    Uri uri = Uri.parse(bsapk.split("\n")[0]);
-                                    DownloadManager.Request request = new DownloadManager.Request(uri);
-                                    request.setTitle("Brawl Stars.apk");
-                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                                    request.setVisibleInDownloadsUi(false);
-                                    request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
-                                    downloadmanager.enqueue(request);
-                                }
-                            });
-                            builder1.setNegativeButton(R.string.no, null);
-                            builder1.setCancelable(true).setOnCancelListener(null).show();
-                        } catch (Exception e) {
-                            crashlytics.recordException(e);
-                            Log.e(TAG, "Exception", e);
-                        }
-                    } else {
-                        new UsefulThings.Signer().execute("");
-                    }
-                }
-            });
+            else fab.setOnClickListener(listenernoaccess);
+ */
         }
     }
 
@@ -329,9 +336,9 @@ public class ActivityPro extends AppCompatActivity {
     }
 
     String getPath(Uri uri) {
-        File a = new File(getExternalFilesDir(null).getAbsolutePath() + "/temp/");
+        File a = new File(getExternalCacheDir().getAbsolutePath() + "/");
         a.mkdirs();
-        File file = new File(getExternalFilesDir(null).getAbsolutePath() + "/temp/temp" + a.list().length + ".zip");
+        File file = new File(getExternalCacheDir().getAbsolutePath() + "/temp" + a.list().length + ".zip");
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             FileOutputStream outputStream = new FileOutputStream(file);
@@ -346,6 +353,7 @@ public class ActivityPro extends AppCompatActivity {
         }
         return file.getAbsolutePath();
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -548,37 +556,7 @@ public class ActivityPro extends AppCompatActivity {
                 fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
                 if (access || root)
                     fab.setOnClickListener(listeneraccess);
-                else fab.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk")).equals(bsapk.split("\n")[1])) {
-                            try {
-                                AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
-                                builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
-                                builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-                                        Uri uri = Uri.parse(bsapk.split("\n")[0]);
-                                        DownloadManager.Request request = new DownloadManager.Request(uri);
-                                        request.setTitle("Brawl Stars.apk");
-                                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                                        request.setVisibleInDownloadsUi(false);
-                                        request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
-                                        downloadmanager.enqueue(request);
-                                    }
-                                });
-                                builder1.setNegativeButton(R.string.no, null);
-                                builder1.setCancelable(true).setOnCancelListener(null).show();
-                            } catch (Exception e) {
-                                crashlytics.recordException(e);
-                                Log.e(TAG, "Exception", e);
-                            }
-                        } else {
-                            new UsefulThings.Signer().execute("");
-                        }
-                    }
-                });
+                else fab.setOnClickListener(listenernoaccess);
             } else {
                 fab.setOnClickListener(new View.OnClickListener() {
                     @Override
