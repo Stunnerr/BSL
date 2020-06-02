@@ -1,8 +1,13 @@
 package com.stunner.moderstars;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.ArrayMap;
 import android.util.Log;
 
@@ -34,6 +39,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import androidx.core.content.FileProvider;
 import stunner.moderstars.R;
 
 import static com.stunner.moderstars.ActivityPro.ctx;
@@ -90,6 +96,7 @@ public class UsefulThings {
         }
         return "no";
     }
+
     public static String calculateSHA(InputStream is) {
         MessageDigest digest;
         try {
@@ -201,6 +208,22 @@ public class UsefulThings {
         return mods;
     }
 
+    public static void installAPK(File apkFile) {
+        Intent intent = new Intent("android.intent.action.VIEW");
+        // intent.addCategory("android.intent.category.DEFAULT");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Uri apkURI = FileProvider.getUriForFile(ctx, ctx.getPackageName() + ".provider", apkFile);
+            intent.setDataAndType(apkURI, "application/vnd.android.package-archive");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } else {
+            intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+        }
+        // intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        ctx.startActivity(intent);
+        showSnackBar(ctx.getString(R.string.success));
+    }
+
     public static class Signer extends AsyncTask<String, String, String> {
         @Override
         protected void onPreExecute() {
@@ -218,9 +241,10 @@ public class UsefulThings {
                 ZipInputStream zin = new ZipInputStream(new FileInputStream(ctx.getExternalFilesDir(null) + "/bs_original.apk"));
                 ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(ctx.getExternalFilesDir(null) + "/bs_mod_unsigned.apk"));
                 ZipEntry ze;
+                int len;
                 boolean flag;
-                while ((ze = zin.getNextEntry()) != null) {
-                    try {
+                try {
+                    while ((ze = zin.getNextEntry()) != null) {
                         flag = false;
                         zout.putNextEntry(new ZipEntry(ze.getName()));
                         if (ze.getName().contains("assets/")) {
@@ -232,25 +256,27 @@ public class UsefulThings {
                                     zout.putNextEntry(entry);
                                     publishProgress(ctx.getString(R.string.installing) + x);
                                     byte[] buffer = new byte[16384];
-                                    while (fis.read(buffer) != -1) {
-                                        zout.write(buffer);
+                                    while ((len = fis.read(buffer)) != -1) {
+                                        zout.write(buffer, 0, len);
                                     }
                                     zout.closeEntry();
+                                    flag = true;
                                     break;
                                 }
-                                flag = true;
+
                             }
                             if (flag) continue;
                         }
-                        if (ze.getName().contains("META-INF")) continue;
+                        //if (ze.getName().contains("META-INF")) continue;
                         publishProgress(ctx.getString(R.string.installing) + ze.getName());
                         byte[] buffer = new byte[16384];
-                        while (zin.read(buffer) != -1) zout.write(buffer);
+                        while ((len = zin.read(buffer)) != -1) zout.write(buffer, 0, len);
                         zout.closeEntry();
-                    } catch (Exception e) {
-                        crashlytics.recordException(e);
-                        publishProgress(e.getMessage());
                     }
+                    zout.close();
+                } catch (Exception e) {
+                    crashlytics.recordException(e);
+                    publishProgress(e.getMessage());
                 }
                 publishProgress(ctx.getString(R.string.signing));
                 String[] strings1 = new String[3];
@@ -273,8 +299,32 @@ public class UsefulThings {
 
         @Override
         protected void onPostExecute(String ret) {
-            pd.dismiss();
-            showSnackBar(ret == null ? ctx.getString(R.string.success) : ret);
+            if (ret != null) showSnackBar(ret);
+            else {
+                pd.dismiss();
+                AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+                builder.setPositiveButton("Install", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                installAPK(new File(ctx.getExternalFilesDir(null).getAbsolutePath() + "/bs_mod_signed.apk"));
+                            }
+                        }.run();
+                    }
+                });
+                builder.setNegativeButton("Cancel", null);
+                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        showSnackBar(ctx.getString(R.string.insuccess));
+                    }
+                });
+                builder.setTitle("BSL");
+                builder.setMessage("If you were using official version from Google Play, you must reinstall Brawl Stars, Make sure that your account is linked with Supercell ID. Continue?");
+                builder.show();
+            }
         }
     }
 
@@ -318,7 +368,6 @@ public class UsefulThings {
                                     json.append(new String(bArr));
                                 }
                                 bufferedInputStream.close();
-                                File folder = file2.getParentFile();
                                 JSONObject jsonObject = new JSONObject(json.toString());
                                 JSONArray files = jsonObject.getJSONArray("files");
                                 Map<String, String> list = new ArrayMap<>();
@@ -326,7 +375,7 @@ public class UsefulThings {
                                     list.put(files.getJSONObject(i).getString("file").replace("\\/", "/"), files.getJSONObject(i).getString("sha"));
                                 }
                                 while (entries.hasMoreElements()) {
-                                    publishProgress("Seaching for changed files");
+                                    publishProgress("Searching for changed files");
                                     zipEntry = (ZipEntry) entries.nextElement();
                                     if (!zipEntry.getName().contains("assets/")) continue;
                                     file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace("assets/", "")));
@@ -350,7 +399,7 @@ public class UsefulThings {
                                         if (read == -1) {
                                             break;
                                         }
-                                        bufferedOutputStream.write(bArr);
+                                        bufferedOutputStream.write(bArr, 0, read);
                                     }
                                     bufferedOutputStream.flush();
                                     bufferedOutputStream.close();
@@ -388,7 +437,7 @@ public class UsefulThings {
                                         if (read == -1) {
                                             break;
                                         }
-                                        bufferedOutputStream.write(bArr);
+                                        bufferedOutputStream.write(bArr, 0, read);
                                     }
                                     bufferedOutputStream.flush();
                                     bufferedOutputStream.close();

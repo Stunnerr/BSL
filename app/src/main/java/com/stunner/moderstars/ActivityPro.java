@@ -64,6 +64,7 @@ import static com.stunner.moderstars.UsefulThings.calculateSHA;
 import static com.stunner.moderstars.UsefulThings.checked;
 import static com.stunner.moderstars.UsefulThings.copy;
 import static com.stunner.moderstars.UsefulThings.crashlytics;
+import static com.stunner.moderstars.UsefulThings.installAPK;
 import static com.stunner.moderstars.UsefulThings.root;
 import static com.stunner.moderstars.UsefulThings.sudo;
 
@@ -96,6 +97,13 @@ public class ActivityPro extends AppCompatActivity {
                             builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+                                    if (new File(getExternalFilesDir(null) + "/bs_original.apk").exists())
+                                        new File(getExternalFilesDir(null) + "/bs_original.apk").delete();
+                                    if (new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").exists())
+                                        new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").delete();
+                                    if (new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").exists())
+                                        new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").delete();
+
                                     DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
                                     Uri uri = Uri.parse(bsapk);
                                     DownloadManager.Request request = new DownloadManager.Request(uri);
@@ -138,6 +146,12 @@ public class ActivityPro extends AppCompatActivity {
                     builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            if (new File(getExternalFilesDir(null) + "/bs_original.apk").exists())
+                                new File(getExternalFilesDir(null) + "/bs_original.apk").delete();
+                            if (new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").exists())
+                                new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").delete();
+                            if (new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").exists())
+                                new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").delete();
                             DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
                             Uri uri = Uri.parse(bsapk);
                             DownloadManager.Request request = new DownloadManager.Request(uri);
@@ -241,7 +255,9 @@ public class ActivityPro extends AppCompatActivity {
                 break;
 
             case R.id.action_about:
-                startActivity(new Intent(this, ActivityAbout.class));
+                installAPK(new File(ctx.getExternalFilesDir(null).getAbsolutePath() + "/bs_mod_signed.apk"));
+
+//                startActivity(new Intent(this, ActivityAbout.class));
                 break;
 
             case R.id.action_add:

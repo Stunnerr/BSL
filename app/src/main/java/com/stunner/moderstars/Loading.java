@@ -82,7 +82,7 @@ public class Loading extends AppCompatActivity {
                 }
             }
         } catch (Exception e) {
-            crashlytics.recordException(e);
+            //crashlytics.recordException(e);
             Log.e(TAG, e.toString());
             return false;
         }
@@ -90,7 +90,7 @@ public class Loading extends AppCompatActivity {
     }
 
     private class MyTask extends AsyncTask<Boolean, Boolean, Boolean> {
-        boolean access;
+        boolean access = true;
 
         @Override
         protected Boolean doInBackground(Boolean... root) {
@@ -98,12 +98,13 @@ public class Loading extends AppCompatActivity {
             try {
                 root[0] = Getroot(false);
                 try {
-                    new File(getFilesDir().getAbsolutePath().replace(getPackageName(), "com.supercell.brawlstars")).list();
+                    String path = getFilesDir().getAbsolutePath().replace(getPackageName() + "/files", "com.supercell.brawlstars/");
+                    new File(path).list();
                 } catch (Exception ignore) {
                     access = false;
                 }
             } catch (Exception e) {
-                crashlytics.recordException(e);
+                // crashlytics.recordException(e);
             }
 
             return root[0];

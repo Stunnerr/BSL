@@ -30,4 +30,5 @@
     <string name="sign">Подписать</string>
     <string name="signing">Подписание...</string>
     <string name="signwarn">Для создания подписанного APK необходимо скачать оригинальный APK игры Brawl Stars (%1$s МБ). Продолжить?</string>
+    <string name="insuccess">Установка не завершена. Установите APK самостоятельно.</string>
 </resources>

@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
     <application
 
         android:allowBackup="true"
@@ -20,6 +19,15 @@
         android:theme="@style/Material.DayNight"
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="29">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
             android:value="true" />
@@ -37,4 +45,6 @@
         <activity android:name="com.stunner.moderstars.ActivityPro" />
         <activity android:name="com.stunner.moderstars.ActivitySettings" />
     </application>
+
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 </manifest>
