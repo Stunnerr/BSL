@@ -22,8 +22,8 @@ import stunner.moderstars.R;
 
 public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHolder, ChildViewHolder> {
 
-    private LayoutInflater inflater;
     private static List<ListParent> parents = new ArrayList<>();
+    private LayoutInflater inflater;
 
     public RecyclerViewAdapter(Context context, List<ParentObject> parentItemList) {
         super(context, parentItemList);
