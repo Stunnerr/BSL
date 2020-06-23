@@ -3,14 +3,12 @@ package com.stunner.moderstars;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -61,10 +59,10 @@ import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH
 import static com.stunner.moderstars.UsefulThings.TAG;
 import static com.stunner.moderstars.UsefulThings.bspath;
 import static com.stunner.moderstars.UsefulThings.calculateSHA;
-import static com.stunner.moderstars.UsefulThings.checked;
 import static com.stunner.moderstars.UsefulThings.copy;
 import static com.stunner.moderstars.UsefulThings.crashlytics;
-import static com.stunner.moderstars.UsefulThings.installAPK;
+import static com.stunner.moderstars.UsefulThings.getname;
+import static com.stunner.moderstars.UsefulThings.modcount;
 import static com.stunner.moderstars.UsefulThings.root;
 import static com.stunner.moderstars.UsefulThings.sudo;
 
@@ -94,7 +92,7 @@ public class ActivityPro extends AppCompatActivity {
                         try {
                             AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
                             builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
-                            builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            /*builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     if (new File(getExternalFilesDir(null) + "/bs_original.apk").exists())
@@ -113,7 +111,7 @@ public class ActivityPro extends AppCompatActivity {
                                     request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
                                     downloadmanager.enqueue(request);
                                 }
-                            });
+                            });*/
                             builder1.setNegativeButton(R.string.no, null);
                             builder1.setCancelable(true).setOnCancelListener(null).show();
                         } catch (Exception e) {
@@ -128,7 +126,7 @@ public class ActivityPro extends AppCompatActivity {
             builder.setNegativeButton(R.string.install, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    new Deploy().execute();
+                    new UsefulThings.Deploy().execute();
                 }
             });
             builder.create().show();
@@ -255,20 +253,14 @@ public class ActivityPro extends AppCompatActivity {
                 break;
 
             case R.id.action_about:
-                installAPK(new File(ctx.getExternalFilesDir(null).getAbsolutePath() + "/bs_mod_signed.apk"));
-
-//                startActivity(new Intent(this, ActivityAbout.class));
+                startActivity(new Intent(this, ActivityAbout.class));
                 break;
 
             case R.id.action_add:
                 choosezip();
                 break;
-            case R.id.action_restore:
-                restore();
-                showSnackBar((String) getText(R.string.restored));
-                break;
-            case R.id.action_alpha:
-                startActivity(new Intent(getApplicationContext(), ActivityPro.class));
+            case R.id.action_repo:
+                startActivity(new Intent(this, ModsRepo.class));
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -277,8 +269,10 @@ public class ActivityPro extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestAppPermissions();
         setContentView(R.layout.activity_pro);
+        requestAppPermissions();
+        if (!PreferenceManager.getDefaultSharedPreferences(this).contains("json"))
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putString("json", "[]").apply();
         Toolbar toolbar = findViewById(R.id.toolbar);
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -320,6 +314,7 @@ public class ActivityPro extends AppCompatActivity {
         root = getIntent().getBooleanExtra("root", false);
         if (!root) UsefulThings.su = "";
         access = getIntent().getBooleanExtra("access", false);
+        if (!access && !root) System.exit(0);
         if (mTabsAdapter.getCount() > 0) {
             mTabsAdapter.notifyDataSetChanged();
             /*            fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
@@ -437,6 +432,7 @@ public class ActivityPro extends AppCompatActivity {
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
+            mPage = modcount(getContext());
             if (getArguments() != null) {
                 mPage = getArguments().getInt(ARG_PAGE);
             }
@@ -469,7 +465,6 @@ public class ActivityPro extends AppCompatActivity {
             List<ParentObject> parentObject = new ArrayList<>();
             folc = UsefulThings.checkmod(getContext(), modc).length - 1;
             if (folc != -1) {
-
                 List<ListParent> parents = initParents(modc);
                 for (int i = 0; i < folc + 1; i++) {
                     List<Object> childList = new ArrayList<>();
@@ -487,77 +482,6 @@ public class ActivityPro extends AppCompatActivity {
         }
     }
 
-    class Deploy extends AsyncTask<Void, String, String> {
-
-
-        ProgressDialog pd;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pd = new ProgressDialog(ActivityPro.this);
-            pd.setTitle("BSL.Install");
-            pd.setMessage(getString(R.string.installing).replace(":", "..."));
-            pd.setCancelable(false);
-            pd.setCanceledOnTouchOutside(false);
-            pd.show();
-        }
-
-        @Override
-        protected String doInBackground(Void... voids) {
-            try {
-                publishProgress(getString(R.string.backingup));
-                sudo("rm -rf " + bspath + "update1/");
-                copy(bspath + "update/", bspath + sudo("ls " + bspath + " "));
-                sudo("rm -rf " + bspath + "update/");
-                for (Object o : checked) {
-                    if (o.getClass().equals(ListParent.class)) {
-                        ListParent x = (ListParent) o;
-                        publishProgress(getString(R.string.installing) + x.getforcopy());
-                        Log.d(TAG, sudo("mkdir -p " + (bspath + "update/" + x.getforcopy())));
-                        Log.d(TAG, x.getforcopy());
-                    } else if (o.getClass().equals(ListChild.class)) {
-                        ListChild x = (ListChild) o;
-                        sudo("mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
-                        publishProgress(getString(R.string.installing) + x.getforcopy());
-                        copy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
-                        x.getPath().mkdirs();
-                        Log.d(TAG, "mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
-                        Log.d(TAG, x.getPath().getAbsolutePath());
-                        Log.d(TAG, bspath + x.getforcopy());
-                    } else {
-                        cancel(true);
-                        Log.d(TAG, "doInBackground: wtf");
-                        return "error";
-                    }
-                }
-            } catch (Exception e) {
-                cancel(true);
-                return e.getLocalizedMessage();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onCancelled(String aVoid) {
-            pd.dismiss();
-            showSnackBar("Cancelled");
-            super.onCancelled(aVoid);
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-            pd.setMessage(values[0]);
-        }
-
-        @Override
-        protected void onPostExecute(String aVoid) {
-            super.onPostExecute(aVoid);
-            pd.dismiss();
-            showSnackBar(aVoid == null ? (String) getText(R.string.success) : aVoid);
-        }
-    }
 
     public class TabsAdapter extends FragmentStatePagerAdapter {
 
@@ -598,7 +522,7 @@ public class ActivityPro extends AppCompatActivity {
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("mod" + position, getString(R.string.mod) + (position + 1));
+            return getname(getApplicationContext(), position);
         }
     }
 }

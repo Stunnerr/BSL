@@ -17,6 +17,7 @@ import com.stunner.moderstars.pro.Models.ListParent;
 import com.stunner.moderstars.signer.apksigner.Main;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -40,6 +41,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import androidx.core.content.FileProvider;
+import androidx.preference.PreferenceManager;
 import stunner.moderstars.R;
 
 import static com.stunner.moderstars.ActivityPro.ctx;
@@ -169,6 +171,23 @@ public class UsefulThings {
         return mods;
     }
 
+    static void delfile(File file) {
+        for (File fof : file.listFiles()) {
+            if (fof.isFile()) fof.delete();
+            else delfile(fof);
+        }
+        file.delete();
+    }
+
+    static void delmod(Context context, int index) {
+        File[] files = checkmods(context);
+        delfile(checkmods(context)[index]);
+        removename(context, index);
+        for (int i = index + 1; i < files.length; ++i) {
+            files[i].renameTo(new File(files[i].getAbsolutePath().replace("/Mods/" + i, "/Mods/" + (i - 1))));
+        }
+    }
+
     static void copy(String src, String dst) {
         output = new byte[256];
         if (process == null) {
@@ -182,6 +201,52 @@ public class UsefulThings {
             crashlytics.recordException(e);
         }
 
+    }
+
+    static String getname(Context context, int id) {
+        String json = PreferenceManager.getDefaultSharedPreferences(context).getString("names", "[]");
+        String ret = context.getString(R.string.mod, id + 1);
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            try {
+                ret = jsonArray.getString(id);
+            } catch (JSONException e) {
+                ret = context.getString(R.string.mod, id + 1);
+                jsonArray.put(id, ret);
+                json = jsonArray.toString();
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("names", json).apply();
+            }
+        } catch (JSONException e) {
+            crashlytics.setCustomKey("json", json);
+            crashlytics.recordException(e);
+        }
+        return ret;
+    }
+
+    static void setname(Context context, int id, String name) {
+        String json = PreferenceManager.getDefaultSharedPreferences(context).getString("names", "[]");
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            jsonArray.put(id, name);
+            json = jsonArray.toString();
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putString("names", json).apply();
+        } catch (JSONException e) {
+            crashlytics.setCustomKey("json", json);
+            crashlytics.recordException(e);
+        }
+    }
+
+    static void removename(Context context, int id) {
+        String json = PreferenceManager.getDefaultSharedPreferences(context).getString("names", "");
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            jsonArray.remove(id);
+            json = jsonArray.toString();
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putString("names", json).apply();
+        } catch (JSONException e) {
+            crashlytics.setCustomKey("json", json);
+            crashlytics.recordException(e);
+        }
     }
 
     static int modcount(Context context) {
@@ -210,7 +275,6 @@ public class UsefulThings {
 
     public static void installAPK(File apkFile) {
         Intent intent = new Intent("android.intent.action.VIEW");
-        // intent.addCategory("android.intent.category.DEFAULT");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Uri apkURI = FileProvider.getUriForFile(ctx, ctx.getPackageName() + ".provider", apkFile);
@@ -219,7 +283,6 @@ public class UsefulThings {
         } else {
             intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
         }
-        // intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         ctx.startActivity(intent);
         showSnackBar(ctx.getString(R.string.success));
     }
@@ -474,6 +537,78 @@ public class UsefulThings {
         protected void onCancelled() {
             super.onCancelled();
             pd.cancel();
+        }
+    }
+
+    static class Deploy extends AsyncTask<Void, String, String> {
+
+
+        ProgressDialog pd;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pd = new ProgressDialog(ctx);
+            pd.setTitle("BSL.Install");
+            pd.setMessage(ctx.getString(R.string.installing).replace(":", "..."));
+            pd.setCancelable(false);
+            pd.setCanceledOnTouchOutside(false);
+            pd.show();
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                publishProgress(ctx.getString(R.string.backingup));
+                sudo("rm -rf " + bspath + "update1/");
+                copy(bspath + "update/", bspath + sudo("ls " + bspath + " "));
+                sudo("rm -rf " + bspath + "update/");
+                for (Object o : checked) {
+                    if (o.getClass().equals(ListParent.class)) {
+                        ListParent x = (ListParent) o;
+                        publishProgress(ctx.getString(R.string.installing) + x.getforcopy());
+                        Log.d(TAG, sudo("mkdir -p " + (bspath + "update/" + x.getforcopy())));
+                        Log.d(TAG, x.getforcopy());
+                    } else if (o.getClass().equals(ListChild.class)) {
+                        ListChild x = (ListChild) o;
+                        sudo("mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
+                        publishProgress(ctx.getString(R.string.installing) + x.getforcopy());
+                        copy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
+                        x.getPath().mkdirs();
+                        Log.d(TAG, "mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
+                        Log.d(TAG, x.getPath().getAbsolutePath());
+                        Log.d(TAG, bspath + x.getforcopy());
+                    } else {
+                        cancel(true);
+                        Log.d(TAG, "doInBackground: wtf");
+                        return "error";
+                    }
+                }
+            } catch (Exception e) {
+                cancel(true);
+                return e.getLocalizedMessage();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onCancelled(String aVoid) {
+            pd.dismiss();
+            showSnackBar("Cancelled");
+            super.onCancelled(aVoid);
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            pd.setMessage(values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String aVoid) {
+            super.onPostExecute(aVoid);
+            pd.dismiss();
+            showSnackBar(aVoid == null ? (String) ctx.getText(R.string.success) : aVoid);
         }
     }
 }
