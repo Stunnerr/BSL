@@ -6,6 +6,10 @@
     android:layout_height="match_parent"
     tools:context="com.stunner.moderstars.TabEditor">
 
+    <include
+        android:id="@+id/appbar"
+        layout="@layout/appbar_layout" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
@@ -13,23 +17,4 @@
         app:layout_constraintTop_toBottomOf="@id/appbar">
 
     </androidx.recyclerview.widget.RecyclerView>
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/Toolbar"
-            app:layout_scrollFlags="scroll|enterAlways|snap"
-            app:menu="@menu/menu_release"
-            app:title="@string/tabeditor"
-            app:titleTextColor="#fff" />
-    </com.google.android.material.appbar.AppBarLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
