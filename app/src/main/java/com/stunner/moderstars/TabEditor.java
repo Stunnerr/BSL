@@ -14,8 +14,6 @@ import android.widget.TextView;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.File;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +29,7 @@ public class TabEditor extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab_editor);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.tabeditor);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -59,7 +58,7 @@ public class TabEditor extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull final ViewHolder holder, final int ab) {
+        public void onBindViewHolder(@NonNull final ViewHolder holder, final int pos) {
             final int position = holder.getBindingAdapterPosition();
             String text = UsefulThings.getname(getApplicationContext(), position);
             final OnClickListener b = new OnClickListener() {
@@ -75,10 +74,8 @@ public class TabEditor extends AppCompatActivity {
                                 @Override
                                 public void onDismissed(Snackbar transientBottomBar, int event) {
                                     super.onDismissed(transientBottomBar, event);
-                                    UsefulThings.removename(getApplicationContext(), position);
                                     try {
-                                        File a = UsefulThings.checkmod(getApplicationContext(), position + 1)[0].getParentFile();
-                                        UsefulThings.delfile(a);
+                                        UsefulThings.delmod(getApplicationContext(), position);
                                     } catch (Exception e) {
                                         UsefulThings.crashlytics.recordException(e);
                                     }
