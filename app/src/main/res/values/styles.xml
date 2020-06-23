@@ -16,12 +16,14 @@
         <item name="colorAccent">@color/AccentColor</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorPrimary">@color/AccentColor</item>
-        <item name="colorPrimaryDark">@color/AccentColor</item>
+        <item name="colorPrimaryDark">#006db3</item>
         <item name="android:colorBackground">#FFF</item>
         <item name="iconPreferenceColor">#111</item>
     </style>
 
-    <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout.Colored"></style>
+    <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout.Colored">
+        <item name="android:background">@color/AccentColor</item>
+    </style>
     <style name="Toolbar">
         <item name="android:textColorSecondary">@color/white</item>
     </style>

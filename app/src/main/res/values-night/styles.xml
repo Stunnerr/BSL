@@ -5,7 +5,7 @@
         <item name="colorAccent">@color/AccentColor</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorPrimary">@color/AccentColor</item>
-        <item name="colorPrimaryDark">#282828</item>
+        <item name="colorPrimaryDark">#121212</item>
         <item name="iconPreferenceColor">#fff</item>
     </style>
 
@@ -13,5 +13,5 @@
         <item name="android:background">#282828</item>
     </style>
 
-    <style name="Toolbar" />
+    <style name="Toolbar"></style>
 </resources>
