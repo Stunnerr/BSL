@@ -11,11 +11,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
@@ -64,7 +64,7 @@ public class TabEditor extends AppCompatActivity {
             final OnClickListener b = new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(TabEditor.this);
+                    MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(TabEditor.this);
                     alertDialog.setMessage(getString(R.string.remove, UsefulThings.getname(getApplicationContext(), position)));
                     alertDialog.setPositiveButton(getText(R.string.yes), new DialogInterface.OnClickListener() {
                         @Override
@@ -98,7 +98,7 @@ public class TabEditor extends AppCompatActivity {
             }, a = new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(TabEditor.this);
+                    MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(TabEditor.this);
                     alertDialog.setMessage(R.string.entername);
                     final EditText input = new EditText(TabEditor.this);
                     LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
