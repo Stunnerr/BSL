@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -38,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
@@ -82,7 +82,7 @@ public class ActivityPro extends AppCompatActivity {
     View.OnClickListener listeneraccess = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+            final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(ctx);
             builder.setTitle("BSL.Install").setMessage(R.string.variant);
             builder.setPositiveButton(R.string.sign, new DialogInterface.OnClickListener() {
                 @Override
@@ -90,7 +90,7 @@ public class ActivityPro extends AppCompatActivity {
                     String sha = calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk"));
                     if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !sha.equals(bsapk.split("\n")[1].toLowerCase())) {
                         try {
-                            AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
+                            MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(ctx);
                             builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
                             /*builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 @Override
@@ -129,7 +129,7 @@ public class ActivityPro extends AppCompatActivity {
                     new UsefulThings.Deploy().execute();
                 }
             });
-            builder.create().show();
+            builder.show();
         }
     };
     View.OnClickListener listenernoaccess = new View.OnClickListener() {
@@ -139,7 +139,7 @@ public class ActivityPro extends AppCompatActivity {
             if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !sha.equals(bsapk.split("\n")[1].toLowerCase()
             )) {
                 try {
-                    AlertDialog.Builder builder1 = new AlertDialog.Builder(ctx);
+                    MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(ctx);
                     builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
                     builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         @Override
@@ -344,6 +344,7 @@ public class ActivityPro extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
         requestAppPermissions();
         super.onResume();
+
     }
 
     String getPath(Uri uri) {
@@ -397,12 +398,11 @@ public class ActivityPro extends AppCompatActivity {
     }
 
     private void choosezip() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_MIME_TYPES, supportedMimeTypes);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
             startActivityForResult(
                     Intent.createChooser(intent, "Выберите архив мода"),
