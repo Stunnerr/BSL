@@ -14,15 +14,13 @@
         app:showAsAction="never"
         android:title="@string/addmod" />
     <item
-        android:id="@+id/action_restore"
+        android:id="@+id/action_repo"
         android:orderInCategory="3"
         app:showAsAction="never"
-        android:title="@string/restore"
-        />
+        android:title="@string/action_repo" />
     <item
         android:id="@+id/action_about"
         android:orderInCategory="4"
         app:showAsAction="never"
         android:title="@string/action_about" />
-
 </menu>
