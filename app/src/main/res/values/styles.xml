@@ -22,7 +22,6 @@
     </style>
 
     <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout.Colored">
-        <item name="android:background">@color/AccentColor</item>
     </style>
     <style name="Toolbar">
         <item name="android:textColorSecondary">@color/white</item>

@@ -7,22 +7,22 @@
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true">
-    <TextView
-        android:id="@+id/parentTitle"
-        android:padding="16dp"
-        android:textStyle="bold"
-        android:fontFamily="@font/roboto"
-        android:text="ddsdsdsddsdsdsdsd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:ignore="RelativeOverlap" />
 
-    <CheckBox
+    <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/checkBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/parentTitle"
+        android:padding="16dp"
+        android:textStyle="bold"
+        android:fontFamily="@font/roboto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:ignore="RelativeOverlap" />
 
 
 </RelativeLayout>

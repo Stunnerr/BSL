@@ -13,5 +13,5 @@
         <item name="android:background">#282828</item>
     </style>
 
-    <style name="Toolbar"></style>
+    <style name="Toolbar" />
 </resources>

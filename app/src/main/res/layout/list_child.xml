@@ -14,7 +14,14 @@
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground">
 
-        <TextView
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkBox1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerHorizontal="true" />
+
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/option1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -23,12 +30,5 @@
             android:fontFamily="@font/roboto"
             android:padding="8dp"
             tools:ignore="RelativeOverlap" />
-
-        <CheckBox
-            android:id="@+id/checkBox1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerHorizontal="true"/>
 </RelativeLayout>
 </RelativeLayout>
