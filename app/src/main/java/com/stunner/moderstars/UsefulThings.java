@@ -1,6 +1,5 @@
 package com.stunner.moderstars;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,6 +10,7 @@ import android.os.Build;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.stunner.moderstars.pro.Models.ListChild;
 import com.stunner.moderstars.pro.Models.ListParent;
@@ -74,7 +74,7 @@ public class UsefulThings {
 
     }
 
-    private static String trimsome(String s) {
+    static String trimsome(String s) {
         //Log.d(TAG, s);
         String s1 = s.split("/csv_logic/")[0];
         s1 = s1.split("/badge/")[0];
@@ -152,7 +152,15 @@ public class UsefulThings {
             process = Runtime.getRuntime();
         }
         try {
-            new DataInputStream(process.exec(su + "cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "").getInputStream()).readFully(output);
+            String owner;
+            int len = new DataInputStream(process.exec(su + "stat -c %U " + bspath).getInputStream()).read(output);
+            owner = new String(output).substring(0, len - 1);
+            new DataInputStream(process.exec(su + "cp -r " + src.getAbsolutePath() + " " + dst.getAbsolutePath() + "").getInputStream()).read(output);
+            String cmd = su + "chown " + owner + " " + dst.getAbsolutePath() + "";
+            process.exec(cmd);
+            output = new byte[256];
+            new DataInputStream(process.exec(cmd.replace("chown", "chgrp")).getInputStream()).read(output);
+            String a = new String(output);
         } catch (Exception e) {
             crashlytics.recordException(e);
         }
@@ -365,7 +373,7 @@ public class UsefulThings {
             if (ret != null) showSnackBar(ret);
             else {
                 pd.dismiss();
-                AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(ctx);
                 builder.setPositiveButton("Install", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -516,7 +524,9 @@ public class UsefulThings {
                     crashlytics.recordException(e);
                     Log.e(TAG, "doInBackground: ", e);
                 }
+                new File(str).delete();
             }
+
             return null;
         }
 
@@ -559,10 +569,10 @@ public class UsefulThings {
         @Override
         protected String doInBackground(Void... voids) {
             try {
-                publishProgress(ctx.getString(R.string.backingup));
+                /*publishProgress(ctx.getString(R.string.backingup));
                 sudo("rm -rf " + bspath + "update1/");
                 copy(bspath + "update/", bspath + sudo("ls " + bspath + " "));
-                sudo("rm -rf " + bspath + "update/");
+                sudo("rm -rf " + bspath + "update/");*/
                 for (Object o : checked) {
                     if (o.getClass().equals(ListParent.class)) {
                         ListParent x = (ListParent) o;
