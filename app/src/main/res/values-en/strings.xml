@@ -34,4 +34,10 @@
     <string name="entername">Enter new name (or leave blank to reset)</string>
     <string name="remove">Remove \"%1$s\"?</string>
     <string name="removed">Mod removed</string>
+    <string name="action_repo">Download mods</string>
+    <string name="mods_repo">Mods repo</string>
+    <string name="desc">Description</string>
+    <string name="changelog">Changelog</string>
+    <string name="version">"Version "</string>
+    <string name="check_internet">No Internet connection.</string>
 </resources>

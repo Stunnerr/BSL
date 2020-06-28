@@ -9,10 +9,22 @@
     <string name="addmod">Добавить мод</string>
     <string name="success">Установка завершена</string>
     <string name="installing">Установка:</string>
-    <string name="restore">Восстановить копию</string>
-    <string name="restored">Восстановление завершено</string>
     <string name="backingup">Создание резервной копии...</string>
     <string name="theme">Тема</string>
+    <string name="extracting">Распаковка:</string>
+    <string name="mod">МОД #%1$d</string>
+    <string name="install">Установить</string>
+    <string name="variant">Выберите действие</string>
+    <string name="sign">Подписать (не работает)</string>
+    <string name="signing">Подписание...</string>
+    <string name="signwarn">Для создания подписанного APK необходимо скачать оригинальный APK игры Brawl Stars (%1$s МБ). Продолжить?</string>
+    <string name="insuccess">Установка не завершена. Установите APK самостоятельно.</string>
+    <string name="tabeditor">Редактор вкладок</string>
+    <string name="tabsummary">Удалить или изменить вкладки</string>
+    <string name="entername">Введите новое имя (или оставьте пустым для сброса)</string>
+    <string name="remove">Удалить \"%1$s\"?</string>
+    <string name="removed">Мод удалён</string>
+    <string name="action_repo">Скачать моды</string>
     <string-array name="pref_theme_read">
         <item name="light">Светлая</item>
         <item name="auto">Авто</item>
@@ -23,12 +35,9 @@
         <item name="auto">0</item>
         <item name="dark">-1</item>
     </string-array>
-    <string name="extracting">Распаковка:</string>
-    <string name="mod">МОД #</string>
-    <string name="install">Установить</string>
-    <string name="variant">Выберите действие</string>
-    <string name="sign">Подписать</string>
-    <string name="signing">Подписание...</string>
-    <string name="signwarn">Для создания подписанного APK необходимо скачать оригинальный APK игры Brawl Stars (%1$s МБ). Продолжить?</string>
-    <string name="insuccess">Установка не завершена. Установите APK самостоятельно.</string>
+    <string name="mods_repo">Репозиторий</string>
+    <string name="desc">Описание</string>
+    <string name="changelog">Список изменений</string>
+    <string name="version">"Версия "</string>
+    <string name="check_internet">Нет подключения к Интернету.</string>
 </resources>
