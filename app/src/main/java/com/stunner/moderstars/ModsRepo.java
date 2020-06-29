@@ -263,11 +263,11 @@ public class ModsRepo extends AppCompatActivity {
                         request.setVisibleInDownloadsUi(false);
                         request.setDestinationUri(Uri.parse("file://" + getExternalCacheDir() + "/TempMod.zip"));
                         downloadmanager.enqueue(request);
-
                         registerReceiver(new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
                                 try {
+                                    dl.setVisibility(View.GONE);
                                     FilenameFilter ff = new FilenameFilter() {
                                         @Override
                                         public boolean accept(File dir, String name) {
@@ -299,7 +299,6 @@ public class ModsRepo extends AppCompatActivity {
                                         }
                                     }
                                     new File(name).delete();
-                                    dl.setVisibility(View.GONE);
                                     PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean("repo" + id, true).apply();
                                     UsefulThings.setname(getApplicationContext(), modnum, text.getText().toString());
                                 } catch (Exception e) {
