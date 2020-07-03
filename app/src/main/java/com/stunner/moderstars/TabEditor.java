@@ -3,6 +3,7 @@ package com.stunner.moderstars;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -69,27 +70,28 @@ public class TabEditor extends AppCompatActivity {
                     alertDialog.setPositiveButton(getText(R.string.yes), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            final Snackbar s = Snackbar.make(findViewById(R.id.editbtn), R.string.removed, BaseTransientBottomBar.LENGTH_SHORT);
-                            final Snackbar.Callback callback = new Snackbar.Callback() {
+                            final Runnable r = new Runnable() {
                                 @Override
-                                public void onDismissed(Snackbar transientBottomBar, int event) {
-                                    super.onDismissed(transientBottomBar, event);
+                                public void run() {
                                     try {
                                         UsefulThings.delmod(getApplicationContext(), position);
+                                        notifyItemRemoved(position);
                                     } catch (Exception e) {
                                         UsefulThings.crashlytics.recordException(e);
                                     }
-                                    notifyItemRemoved(position);
                                 }
                             };
-                            s.addCallback(callback);
+                            final Handler h = new Handler();
+                            final Snackbar s = Snackbar.make(findViewById(R.id.editbtn), R.string.removed, 2000);
                             s.setAction("Undo", new OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    s.removeCallback(callback);
+                                    h.removeCallbacks(r);
                                 }
                             });
+                            s.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
                             s.show();
+                            h.postDelayed(r, 2100);
                         }
                     });
                     alertDialog.setNegativeButton(getText(R.string.no), null);
