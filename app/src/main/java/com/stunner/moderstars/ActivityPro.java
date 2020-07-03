@@ -92,7 +92,7 @@ public class ActivityPro extends AppCompatActivity {
                         try {
                             MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(ctx);
                             builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
-                            /*builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     if (new File(getExternalFilesDir(null) + "/bs_original.apk").exists())
@@ -111,7 +111,7 @@ public class ActivityPro extends AppCompatActivity {
                                     request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
                                     downloadmanager.enqueue(request);
                                 }
-                            });*/
+                            });
                             builder1.setNegativeButton(R.string.no, null);
                             builder1.setCancelable(true).setOnCancelListener(null).show();
                         } catch (Exception e) {
@@ -329,7 +329,7 @@ public class ActivityPro extends AppCompatActivity {
     protected void onResume() {
         ctx = this;
         if (a != mTabsAdapter.getCount()) mTabsAdapter.notifyDataSetChanged();
-        SharedPreferences shPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        final SharedPreferences shPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         switch (shPrefs.getString("theme", "0")) {
             case "1":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -340,6 +340,19 @@ public class ActivityPro extends AppCompatActivity {
             default:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
+        }
+        if (shPrefs.getBoolean("firstrun", true)) {
+            MaterialAlertDialogBuilder firstrun = new MaterialAlertDialogBuilder(this);
+            firstrun.setMessage(R.string.first_run);
+            firstrun.setTitle(R.string.app_name);
+            firstrun.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    shPrefs.edit().putBoolean("firstrun", false).apply();
+                }
+            });
+            firstrun.setCancelable(false);
+            firstrun.show();
         }
         fragmentManager = getSupportFragmentManager();
         requestAppPermissions();
