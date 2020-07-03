@@ -16,11 +16,11 @@
         <item name="colorAccent">@color/AccentColor</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorPrimary">@color/AccentColor</item>
+        <item name="fontFamily">@font/roboto</item>
         <item name="colorPrimaryDark">#006db3</item>
         <item name="android:colorBackground">#FFF</item>
         <item name="iconPreferenceColor">#111</item>
     </style>
-
     <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout.Colored">
     </style>
     <style name="Toolbar">
