@@ -67,8 +67,6 @@ public class ModsRepo extends AppCompatActivity {
             new Update().execute((Void) null);
         }
     };
-    int count = 0;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,7 +89,6 @@ public class ModsRepo extends AppCompatActivity {
                 refreshListener.onRefresh();
             }
         });
-        // new Update().execute((Void) null);
     }
 
     @Override
@@ -177,11 +174,6 @@ public class ModsRepo extends AppCompatActivity {
             h = new Handler();
         }
 
-        /*ModList(List<Map<String,String>> data, List<List<Map<String, String>>> clog){
-            h = new Handler();
-            maps = data;
-            changelog = clog;
-        }*/
         void setData(List<Map<String, String>> data, List<List<Map<String, String>>> clog) {
             maps = data;
             changelog = clog;
@@ -263,6 +255,7 @@ public class ModsRepo extends AppCompatActivity {
                         request.setVisibleInDownloadsUi(false);
                         request.setDestinationUri(Uri.parse("file://" + getExternalCacheDir() + "/TempMod.zip"));
                         downloadmanager.enqueue(request);
+                        dl.setOnClickListener(null);
                         registerReceiver(new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
