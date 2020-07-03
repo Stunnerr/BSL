@@ -15,7 +15,7 @@
     <string name="mod">МОД #%1$d</string>
     <string name="install">Установить</string>
     <string name="variant">Выберите действие</string>
-    <string name="sign">Подписать (не работает)</string>
+    <string name="sign">Подписать</string>
     <string name="signing">Подписание...</string>
     <string name="signwarn">Для создания подписанного APK необходимо скачать оригинальный APK игры Brawl Stars (%1$s МБ). Продолжить?</string>
     <string name="insuccess">Установка не завершена. Установите APK самостоятельно.</string>
@@ -40,4 +40,5 @@
     <string name="changelog">Список изменений</string>
     <string name="version">"Версия "</string>
     <string name="check_internet">Нет подключения к Интернету.</string>
+    <string name="first_run">Привет! Если вы скачали это приложение, значит, что вы хотите установить моды на Brawl Stars. \nИнструкция довольно проста, но её стоит написать: \n\n1) Нажмите на плюсик снизу и выберите zip-архив с модом или модифицированный APK-файл; \n2) Выберите нужные файлы из мода/ов; \n3) Нажмите на кнопку установки и ожидайте.</string>
 </resources>
