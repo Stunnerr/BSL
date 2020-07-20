@@ -485,7 +485,7 @@ public class UsefulThings {
                             cancel(true);
                             return null;
                         }
-                    } else {//unzip
+                    } else {        //unzipping
                         try {
                             File file = new File(str);
                             int b = checkmods(ctx).length;
