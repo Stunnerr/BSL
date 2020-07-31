@@ -99,7 +99,7 @@ public class Loading extends AppCompatActivity {
                 root[0] = Getroot(false);
                 try {
                     String path = getFilesDir().getAbsolutePath().replace(getPackageName() + "/files", "com.supercell.brawlstars/");
-                    new File(path).list();
+                    access = new File(path).list() != null;
                 } catch (Exception ignore) {
                     access = false;
                 }
