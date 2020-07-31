@@ -57,12 +57,12 @@ public class UsefulThings {
             return b.compareTo(a);
         }
     };
-    public static FirebaseCrashlytics crashlytics;
+    static FirebaseCrashlytics crashlytics;
     public static List<Object> checked = new ArrayList<>();
     static boolean root = false;
     static String su = "su -c ";
     static String bspath;
-    static byte[] output;
+    private static byte[] output;
     private static ProgressDialog pd;
     private static Runtime process;
 
@@ -91,7 +91,7 @@ public class UsefulThings {
         return s1.endsWith("/") ? (s1) : (s1 + "/");
     }
 
-    public static String calculateSHA(File f) {
+    static String calculateSHA(File f) {
         try {
             return calculateSHA(new FileInputStream(f));
         } catch (Exception ignore) {
@@ -99,7 +99,7 @@ public class UsefulThings {
         return "no";
     }
 
-    public static String calculateSHA(InputStream is) {
+    static String calculateSHA(InputStream is) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-1");
@@ -178,7 +178,6 @@ public class UsefulThings {
             Arrays.sort(mods, comp);
         return mods;
     }
-
     static void delfile(File file) {
         for (File fof : file.listFiles()) {
             if (fof.isFile()) fof.delete();
@@ -190,6 +189,10 @@ public class UsefulThings {
     static void delmod(Context context, int index) {
         File[] files = checkmods(context);
         delfile(checkmods(context)[index]);
+        int repoid = fromrepo(context, index);
+        if (repoid != -1) {
+            PreferenceManager.getDefaultSharedPreferences(context).edit().remove("repo" + repoid).apply();
+        }
         removename(context, index);
         for (int i = index + 1; i < files.length; ++i) {
             files[i].renameTo(new File(files[i].getAbsolutePath().replace("/Mods/" + i, "/Mods/" + (i - 1))));
@@ -209,6 +212,38 @@ public class UsefulThings {
             crashlytics.recordException(e);
         }
 
+    }
+
+    static void setrepo(Context context, int id, int a) {
+        String json = PreferenceManager.getDefaultSharedPreferences(context).getString("repo_ids", "[]");
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            jsonArray.put(id, a);
+            json = jsonArray.toString();
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putString("repo_ids", json).apply();
+        } catch (JSONException e) {
+            crashlytics.setCustomKey("json", json);
+            crashlytics.recordException(e);
+        }
+    }
+
+    static int fromrepo(Context context, int id) {
+        String json = PreferenceManager.getDefaultSharedPreferences(context).getString("repo_ids", "[]");
+        int ret = -1;
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            try {
+                ret = jsonArray.getInt(id);
+            } catch (JSONException e) {
+                jsonArray.put(id, -1);
+                json = jsonArray.toString();
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("repo_ids", json).apply();
+            }
+        } catch (JSONException e) {
+            crashlytics.setCustomKey("json", json);
+            crashlytics.recordException(e);
+        }
+        return ret;
     }
 
     static String getname(Context context, int id) {
@@ -260,13 +295,14 @@ public class UsefulThings {
     static int modcount(Context context) {
         String d = context.getExternalFilesDir(null) + "/Mods";
         File file = new File(d);
+        file.mkdirs();
         int count = 0;
         try {
             for (File x : file.listFiles()) {
                 if (x.listFiles().length - 1 != -1) count++;
             }
         } catch (Exception e) {
-            count = -10;
+            count = 0;
         }
         return count;
     }
@@ -569,22 +605,23 @@ public class UsefulThings {
         @Override
         protected String doInBackground(Void... voids) {
             try {
-                /*publishProgress(ctx.getString(R.string.backingup));
-                sudo("rm -rf " + bspath + "update1/");
-                copy(bspath + "update/", bspath + sudo("ls " + bspath + " "));
-                sudo("rm -rf " + bspath + "update/");*/
                 for (Object o : checked) {
                     if (o.getClass().equals(ListParent.class)) {
                         ListParent x = (ListParent) o;
                         publishProgress(ctx.getString(R.string.installing) + x.getforcopy());
-                        Log.d(TAG, sudo("mkdir -p " + (bspath + "update/" + x.getforcopy())));
+                        if (x.getTitle().equals("fingerprint.json")) {
+                            sudo("mkdir -p " + (bspath + "update/" + x.getTitle()));
+                            copy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
+                            Log.d(TAG, "mkdir -p " + (bspath + "update/" + x.getTitle()));
+                            Log.d(TAG, x.getPath().getAbsolutePath());
+                        } else
+                            Log.d(TAG, sudo("mkdir -p " + (bspath + "update/" + x.getforcopy())));
                         Log.d(TAG, x.getforcopy());
                     } else if (o.getClass().equals(ListChild.class)) {
                         ListChild x = (ListChild) o;
-                        sudo("mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
                         publishProgress(ctx.getString(R.string.installing) + x.getforcopy());
+                        sudo("mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
                         copy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
-                        x.getPath().mkdirs();
                         Log.d(TAG, "mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
                         Log.d(TAG, x.getPath().getAbsolutePath());
                         Log.d(TAG, bspath + x.getforcopy());
