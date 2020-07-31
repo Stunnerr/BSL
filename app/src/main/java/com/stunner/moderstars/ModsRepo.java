@@ -67,6 +67,7 @@ public class ModsRepo extends AppCompatActivity {
             new Update().execute((Void) null);
         }
     };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -246,7 +247,7 @@ public class ModsRepo extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         dl.setEnabled(false);
-                        final int modnum = UsefulThings.modcount(getApplicationContext());
+                        final int modnum = UsefulThings.fromrepo(getApplicationContext(), id) == -1 ? UsefulThings.modcount(getApplicationContext()) : UsefulThings.fromrepo(getApplicationContext(), id);
                         DownloadManager downloadmanager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                         Uri uri = Uri.parse(link);
                         final DownloadManager.Request request = new DownloadManager.Request(uri);
@@ -292,8 +293,9 @@ public class ModsRepo extends AppCompatActivity {
                                         }
                                     }
                                     new File(name).delete();
-                                    PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean("repo" + id, true).apply();
+                                    PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("repo" + id, changelog.get(0).get("version")).apply();
                                     UsefulThings.setname(getApplicationContext(), modnum, text.getText().toString());
+                                    UsefulThings.setrepo(getApplicationContext(), modnum, id);
                                 } catch (Exception e) {
                                     UsefulThings.crashlytics.recordException(e);
                                 }
@@ -310,25 +312,25 @@ public class ModsRepo extends AppCompatActivity {
                         LayoutInflater inflater = ModsRepo.this.getLayoutInflater();
                         View layout = inflater.inflate(R.layout.repo_mod_info, null);
                         String d = getString(R.string.changelog);
-                        int end = 0;
+                        int start = 0;
                         SpannableStringBuilder string = new SpannableStringBuilder(text.getText() + "\n\n" + desc + "\n\n" + d + "\n\n");
-                        string.setSpan(new RelativeSizeSpan(2f), end, text.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        end = text.getText().length() + desc.length() + 4;
+                        string.setSpan(new RelativeSizeSpan(2f), start, text.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        start = text.getText().length() + desc.length() + 4;
                         //string.setSpan(new RelativeSizeSpan(1), text.getText().length(), end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        string.setSpan(new RelativeSizeSpan(1.5f), end, end + d.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        string.setSpan(new DividerSpan(), end, end + d.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        end += d.length() + 2;
+                        string.setSpan(new RelativeSizeSpan(1.5f), start, start + d.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        string.setSpan(new DividerSpan(), start, start + d.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        start += d.length() + 2;
                         for (Map<String, String> changes : changelog) {
                             string.append(getString(R.string.version) + changes.get("version"));
                             string.append("\n");
-                            string.setSpan(new RelativeSizeSpan(1.3f), end, end + (getString(R.string.version) + changes.get("version")).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                            end += (getString(R.string.version) + changes.get("version")).length() + 1;
+                            string.setSpan(new RelativeSizeSpan(1.3f), start, start + (getString(R.string.version) + changes.get("version")).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            start += (getString(R.string.version) + changes.get("version")).length() + 1;
                             String change = changes.get("changes");
                             for (String a : change.split("\n")) {
                                 string.append(a + "\n");
-                                string.setSpan(new BulletSpan(20), end, end + a.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                string.setSpan(new RelativeSizeSpan(1.1f), end, end + a.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                end += a.length() + 1;
+                                string.setSpan(new BulletSpan(20), start, start + a.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                string.setSpan(new RelativeSizeSpan(1.1f), start, start + a.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                start += a.length() + 2;
                             }
                             string.append("\n");
                         }
@@ -347,7 +349,8 @@ public class ModsRepo extends AppCompatActivity {
                 desc = map.get("desc");
                 id = Integer.parseInt(map.get("id"));
                 changelog = clog;
-                if (PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("repo" + id, false)) {
+
+                if (PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("repo" + id, "").equals(clog.get(0).get("version"))) {
                     dl.setVisibility(View.GONE);
                 }
             }
