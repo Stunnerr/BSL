@@ -40,5 +40,5 @@
     <string name="changelog">Changelog</string>
     <string name="version">"Version "</string>
     <string name="check_internet">No Internet connection.</string>
-    <string name="first_run">Hello! If you downloaded this app, you want to install mods for Brawl Stars. \nGuide is simple, but it must be written here:\n\n1) Press the add button in the bottom and choose zip with mod or modded APK;\n2) Choose necessary files from mod(s); \n3) Press the install button and wait a bit.</string>
+    <string name="first_run">Hello! If you downloaded this app, you want to install mods for Brawl Stars. \nGuide is quite simple:\n\n1) Press the add button in the bottom and choose zip with mod or modded APK;\n2) Choose necessary files from mod(s); \n3) Press the install button and wait a bit.</string>
 </resources>
