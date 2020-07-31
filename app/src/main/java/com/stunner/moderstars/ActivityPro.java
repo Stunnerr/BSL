@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
@@ -70,6 +71,7 @@ public class ActivityPro extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
     public static Context ctx;
     static boolean access;
+    AlertDialog dialog;
     static TabsAdapter mTabsAdapter;
     static TabLayout mTabLayout;
     static ViewPager mViewPager;
@@ -78,8 +80,36 @@ public class ActivityPro extends AppCompatActivity {
     static int a = -10;
     int perms = 0;
     String[] supportedMimeTypes = {"application/zip", "application/vnd.android.package-archive"};
-    String bsapk = "", size = "100";
-    View.OnClickListener listeneraccess = new View.OnClickListener() {
+    String bsapk = "", size = "...";
+    Runnable download = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                URL url = new URL("https://pastebin.com/raw/xStDu04p");
+                URLConnection urlConnection = url.openConnection();
+                urlConnection.setConnectTimeout(5000);
+                urlConnection.setReadTimeout(5000);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                StringBuilder stringBuilder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line + "\n");
+                }
+                bsapk = stringBuilder.toString();
+                size = new DecimalFormat("#.##").format((double) new URL(bsapk.split("\n")[0]).openConnection().getContentLength() / 1048576);
+                if (dialog != null) dialog.setMessage(getString(R.string.signwarn, size));
+            } catch (Exception e) {
+                crashlytics.recordException(e);
+            }
+        }
+    };
+    View.OnClickListener signer = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            signer();
+        }
+    };
+    View.OnClickListener method = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(ctx);
@@ -87,40 +117,7 @@ public class ActivityPro extends AppCompatActivity {
             builder.setPositiveButton(R.string.sign, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    String sha = calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk"));
-                    if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !sha.equals(bsapk.split("\n")[1].toLowerCase())) {
-                        try {
-                            MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(ctx);
-                            builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
-                            builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if (new File(getExternalFilesDir(null) + "/bs_original.apk").exists())
-                                        new File(getExternalFilesDir(null) + "/bs_original.apk").delete();
-                                    if (new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").exists())
-                                        new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").delete();
-                                    if (new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").exists())
-                                        new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").delete();
-
-                                    DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-                                    Uri uri = Uri.parse(bsapk);
-                                    DownloadManager.Request request = new DownloadManager.Request(uri);
-                                    request.setTitle("Brawl Stars.apk");
-                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                                    request.setVisibleInDownloadsUi(false);
-                                    request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
-                                    downloadmanager.enqueue(request);
-                                }
-                            });
-                            builder1.setNegativeButton(R.string.no, null);
-                            builder1.setCancelable(true).setOnCancelListener(null).show();
-                        } catch (Exception e) {
-                            crashlytics.recordException(e);
-                            Log.e(TAG, "Exception", e);
-                        }
-                    } else {
-                        new UsefulThings.Signer().execute("");
-                    }
+                    signer();
                 }
             });
             builder.setNegativeButton(R.string.install, new DialogInterface.OnClickListener() {
@@ -132,46 +129,6 @@ public class ActivityPro extends AppCompatActivity {
             builder.show();
         }
     };
-    View.OnClickListener listenernoaccess = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            String sha = calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk"));
-            if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !sha.equals(bsapk.split("\n")[1].toLowerCase()
-            )) {
-                try {
-                    MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(ctx);
-                    builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
-                    builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (new File(getExternalFilesDir(null) + "/bs_original.apk").exists())
-                                new File(getExternalFilesDir(null) + "/bs_original.apk").delete();
-                            if (new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").exists())
-                                new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").delete();
-                            if (new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").exists())
-                                new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").delete();
-                            DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-                            Uri uri = Uri.parse(bsapk);
-                            DownloadManager.Request request = new DownloadManager.Request(uri);
-                            request.setTitle("Brawl Stars.apk");
-                            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                            request.setVisibleInDownloadsUi(false);
-                            request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
-                            downloadmanager.enqueue(request);
-                        }
-                    });
-                    builder1.setNegativeButton(R.string.no, null);
-                    builder1.setCancelable(true).setOnCancelListener(null).show();
-                } catch (Exception e) {
-                    crashlytics.recordException(e);
-                    Log.e(TAG, "Exception", e);
-                }
-            } else {
-                new UsefulThings.Signer().execute("");
-            }
-
-        }
-    };
 
     public static void showSnackBar(String text) {
         Snackbar snackbar = Snackbar.make(fab, text, LENGTH_SHORT).setAnimationMode(ANIMATION_MODE_SLIDE);
@@ -179,6 +136,50 @@ public class ActivityPro extends AppCompatActivity {
         params.setMargins(0, 0, 0, 0);
         snackbar.getView().setLayoutParams(params);
         snackbar.show();
+    }
+
+    public void signer() {
+        try {
+            wait(1000);
+        } catch (Exception ignore) {
+        }
+        String sha = calculateSHA(new File(getExternalFilesDir(null) + "/bs_original.apk"));
+        if (!new File(getExternalFilesDir(null) + "/bs_original.apk").exists() || !sha.equals(bsapk.split("\n")[1].toLowerCase()
+        )) {
+            try {
+                MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(this);
+                builder1.setTitle("BSL.Sign").setMessage(getString(R.string.signwarn, size));
+                builder1.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (new File(getExternalFilesDir(null) + "/bs_original.apk").exists())
+                            new File(getExternalFilesDir(null) + "/bs_original.apk").delete();
+                        if (new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").exists())
+                            new File(getExternalFilesDir(null) + "/bs_mod_unsigned.apk").delete();
+                        if (new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").exists())
+                            new File(getExternalFilesDir(null) + "/bs_mod_signed.apk").delete();
+                        DownloadManager downloadmanager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                        Uri uri = Uri.parse(bsapk);
+                        DownloadManager.Request request = new DownloadManager.Request(uri);
+                        request.setTitle("Brawl Stars.apk");
+                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                        request.setVisibleInDownloadsUi(false);
+                        request.setDestinationUri(Uri.parse("file://" + getExternalFilesDir(null) + "/bs_original.apk"));
+                        downloadmanager.enqueue(request);
+                    }
+                });
+                builder1.setNegativeButton(R.string.no, null);
+                dialog = builder1.setCancelable(true).setOnCancelListener(null).create();
+                dialog.show();
+            } catch (Exception e) {
+                crashlytics.recordException(e);
+                Log.e(TAG, "Exception", e);
+            }
+        } else {
+            new UsefulThings.Signer().execute("");
+        }
+
+
     }
 
     private void requestAppPermissions() {
@@ -284,28 +285,6 @@ public class ActivityPro extends AppCompatActivity {
         mViewPager = findViewById(R.id.viewpager);
         mTabLayout = findViewById(R.id.tabs);
         mTabsAdapter = new TabsAdapter(getSupportFragmentManager());
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    URL url = new URL("https://pastebin.com/raw/xStDu04p");
-                    URLConnection urlConnection = url.openConnection();
-                    urlConnection.setConnectTimeout(5000);
-                    urlConnection.setReadTimeout(5000);
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        stringBuilder.append(line + "\n");
-                    }
-                    bsapk = stringBuilder.toString();
-                    size = new DecimalFormat("#.##").format((double) new URL(bsapk.split("\n")[0]).openConnection().getContentLength() / 1048576);
-                } catch (Exception e) {
-                    crashlytics.recordException(e);
-                }
-            }
-        };
-        new Thread(runnable).start();
         mViewPager.setAdapter(mTabsAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
         setSupportActionBar(toolbar);
@@ -314,7 +293,7 @@ public class ActivityPro extends AppCompatActivity {
         root = getIntent().getBooleanExtra("root", false);
         if (!root) UsefulThings.su = "";
         access = getIntent().getBooleanExtra("access", false);
-        if (!access && !root) System.exit(0);
+        new Thread(download).start();
         if (mTabsAdapter.getCount() > 0) {
             mTabsAdapter.notifyDataSetChanged();
             /*            fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
@@ -508,8 +487,8 @@ public class ActivityPro extends AppCompatActivity {
                 mTabLayout.setVisibility(View.VISIBLE);
                 fab.setImageDrawable(getResources().getDrawable(R.drawable.ic_check));
                 if (access || root)
-                    fab.setOnClickListener(listeneraccess);
-                else fab.setOnClickListener(listenernoaccess);
+                    fab.setOnClickListener(method);
+                else fab.setOnClickListener(signer);
             } else {
                 fab.setOnClickListener(new View.OnClickListener() {
                     @Override
