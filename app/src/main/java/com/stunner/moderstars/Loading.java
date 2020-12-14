@@ -18,7 +18,6 @@ import java.io.File;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
-import stunner.moderstars.R;
 
 import static com.stunner.moderstars.UsefulThings.TAG;
 import static com.stunner.moderstars.UsefulThings.crashlytics;
@@ -52,10 +51,11 @@ public class Loading extends AppCompatActivity {
         createConfigurationContext(conf);
         text = findViewById(R.id.LoadText);
         MyTask task = new MyTask();
+        getSupportActionBar().hide();
         task.execute(true);
     }
 
-    boolean Getroot(final boolean att) {
+    boolean getRoot(final boolean att) {
         try {
             Process process = Runtime.getRuntime().exec("su");
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
@@ -76,7 +76,7 @@ public class Loading extends AppCompatActivity {
 
             } else {
                 Log.w(TAG, "Root access rejected");
-                if (att) Getroot(true);
+                if (att) getRoot(true);
                 else {
                     Log.e(TAG, "Can't get root access");
                 }
@@ -96,7 +96,7 @@ public class Loading extends AppCompatActivity {
         protected Boolean doInBackground(Boolean... root) {
             root[0] = false;
             try {
-                root[0] = Getroot(false);
+                root[0] = getRoot(false);
                 try {
                     String path = getFilesDir().getAbsolutePath().replace(getPackageName() + "/files", "com.supercell.brawlstars/");
                     access = new File(path).list() != null;
@@ -113,7 +113,7 @@ public class Loading extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean root) {
             text.setText(R.string.starting);
-            Intent intent = new Intent(getApplicationContext(), ActivityPro.class);
+            Intent intent = new Intent(getApplicationContext(), RedesignActivity.class);
             intent.putExtra("access", access);
             intent.putExtra("root", root);
             startActivity(intent);

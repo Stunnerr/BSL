@@ -1,5 +1,6 @@
 package com.stunner.moderstars;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,9 +13,10 @@ import android.util.Log;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.stunner.moderstars.pro.Models.ListChild;
-import com.stunner.moderstars.pro.Models.ListParent;
+import com.stunner.moderstars.modlist.models.ModListFile;
+import com.stunner.moderstars.modlist.models.ModListFolder;
 import com.stunner.moderstars.signer.apksigner.Main;
+import com.stunner.moderstars.ui.home.HomeFragment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,14 +44,13 @@ import java.util.zip.ZipOutputStream;
 
 import androidx.core.content.FileProvider;
 import androidx.preference.PreferenceManager;
-import stunner.moderstars.R;
 
-import static com.stunner.moderstars.ActivityPro.ctx;
-import static com.stunner.moderstars.ActivityPro.showSnackBar;
+import static com.stunner.moderstars.RedesignActivity.showSnackBar;
+
 
 public class UsefulThings {
-    static final String TAG = "BSL";
-    private static final Comparator<File> comp = new Comparator<File>() {
+    public static final String TAG = "BSL";
+    private static final Comparator<File> fileThenFolderComp = new Comparator<File>() {
         @Override
         public int compare(File o1, File o2) {
             Boolean a = o1.isDirectory(), b = o2.isDirectory();
@@ -57,41 +58,18 @@ public class UsefulThings {
             return b.compareTo(a);
         }
     };
-    static FirebaseCrashlytics crashlytics;
+    @SuppressLint("StaticFieldLeak")
+    public static Context ctx;
+    public static FirebaseCrashlytics crashlytics;
     public static List<Object> checked = new ArrayList<>();
-    static boolean root = false;
+    public static boolean root = false;
     static String su = "su -c ";
     static String bspath;
     private static byte[] output;
     private static ProgressDialog pd;
     private static Runtime process;
 
-    static File[] filelist(File folder) {
-        File[] files = folder.listFiles();
-        if (files != null)
-            Arrays.sort(files, comp);
-        return files;
-
-    }
-
-    static String trimsome(String s) {
-        //Log.d(TAG, s);
-        String s1 = s.split("/csv_logic/")[0];
-        s1 = s1.split("/badge/")[0];
-        s1 = s1.split("/csv_client/")[0];
-        s1 = s1.split("/font/")[0];
-        s1 = s1.split("/image/")[0];
-        s1 = s1.split("/localization/")[0];
-        s1 = s1.split("/music/")[0];
-        s1 = s1.split("/sc/")[0];
-        s1 = s1.split("/sc3d/")[0];
-        s1 = s1.split("/sfx/")[0];
-        s1 = s1.split("/shader/")[0];
-        s1 = s1.split("/fingerprint.json")[0];
-        return s1.endsWith("/") ? (s1) : (s1 + "/");
-    }
-
-    static String calculateSHA(File f) {
+    public static String calculateSHA(File f) {
         try {
             return calculateSHA(new FileInputStream(f));
         } catch (Exception ignore) {
@@ -99,7 +77,7 @@ public class UsefulThings {
         return "no";
     }
 
-    static String calculateSHA(InputStream is) {
+    public static String calculateSHA(InputStream is) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-1");
@@ -132,21 +110,58 @@ public class UsefulThings {
         }
     }
 
-    static String sudo(String cmd) {
-        output = new byte[256];
-        if (process == null) {
-            process = Runtime.getRuntime();
+    private static File[] listMods(Context context) {
+        String d = context.getExternalFilesDir(null) + "/Mods";
+        new File(d).mkdirs();
+        File[] mods = new File(d).listFiles();
+        for (File i : mods)
+            i.renameTo(new File(i.getParentFile().toString() + "/" + i.getName().toLowerCase()));
+        mods = new File(d).listFiles();
+        if (mods != null)
+            Arrays.sort(mods, fileThenFolderComp);
+        return mods;
+    }
+
+    public static File[] getMod(Context context, int modn) {
+        modn--;
+        String d = context.getExternalFilesDir(null) + "/Mods/" + modn;
+        Log.d(TAG, d);
+        File[] mods = new File(d).listFiles();
+        if (mods != null)
+            Arrays.sort(mods, fileThenFolderComp);
+        return mods;
+    }
+
+    public static void delMod(Context context, int index) {
+        File[] files = listMods(context);
+        delFile(listMods(context)[index]);
+        int repoid = getRepoModId(context, index);
+        if (repoid != -1) {
+            PreferenceManager.getDefaultSharedPreferences(context).edit().remove("repo" + repoid).apply();
         }
-        try {
-            new DataInputStream(process.exec(su + cmd).getInputStream()).readFully(output);
-            return new String(output);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "";
+        clearModName(context, index);
+        for (int i = index + 1; i < files.length; ++i) {
+            files[i].renameTo(new File(files[i].getAbsolutePath().replace("/Mods/" + i, "/Mods/" + (i - 1))));
         }
     }
 
-    static void copy(File src, File dst) {
+    public static File[] listFiles(File modFolder) {
+        File[] files = modFolder.listFiles();
+        if (files != null)
+            Arrays.sort(files, fileThenFolderComp);
+        return files;
+
+    }
+
+    static void delFile(File file) {
+        for (File fof : file.listFiles()) {
+            if (fof.isFile()) fof.delete();
+            else delFile(fof);
+        }
+        file.delete();
+    }
+
+    static void cmdCopy(File src, File dst) {
         output = new byte[256];
         if (process == null) {
             process = Runtime.getRuntime();
@@ -167,39 +182,7 @@ public class UsefulThings {
 
     }
 
-    private static File[] checkmods(Context context) {
-        String d = context.getExternalFilesDir(null) + "/Mods";
-        new File(d).mkdirs();
-        File[] mods = new File(d).listFiles();
-        for (File i : mods)
-            i.renameTo(new File(i.getParentFile().toString() + "/" + i.getName().toLowerCase()));
-        mods = new File(d).listFiles();
-        if (mods != null)
-            Arrays.sort(mods, comp);
-        return mods;
-    }
-    static void delfile(File file) {
-        for (File fof : file.listFiles()) {
-            if (fof.isFile()) fof.delete();
-            else delfile(fof);
-        }
-        file.delete();
-    }
-
-    static void delmod(Context context, int index) {
-        File[] files = checkmods(context);
-        delfile(checkmods(context)[index]);
-        int repoid = fromrepo(context, index);
-        if (repoid != -1) {
-            PreferenceManager.getDefaultSharedPreferences(context).edit().remove("repo" + repoid).apply();
-        }
-        removename(context, index);
-        for (int i = index + 1; i < files.length; ++i) {
-            files[i].renameTo(new File(files[i].getAbsolutePath().replace("/Mods/" + i, "/Mods/" + (i - 1))));
-        }
-    }
-
-    static void copy(String src, String dst) {
+    static void cmdCopy(String src, String dst) {
         output = new byte[256];
         if (process == null) {
             process = Runtime.getRuntime();
@@ -214,20 +197,7 @@ public class UsefulThings {
 
     }
 
-    static void setrepo(Context context, int id, int a) {
-        String json = PreferenceManager.getDefaultSharedPreferences(context).getString("repo_ids", "[]");
-        try {
-            JSONArray jsonArray = new JSONArray(json);
-            jsonArray.put(id, a);
-            json = jsonArray.toString();
-            PreferenceManager.getDefaultSharedPreferences(context).edit().putString("repo_ids", json).apply();
-        } catch (JSONException e) {
-            crashlytics.setCustomKey("json", json);
-            crashlytics.recordException(e);
-        }
-    }
-
-    static int fromrepo(Context context, int id) {
+    public static int getRepoModId(Context context, int id) {
         String json = PreferenceManager.getDefaultSharedPreferences(context).getString("repo_ids", "[]");
         int ret = -1;
         try {
@@ -246,7 +216,20 @@ public class UsefulThings {
         return ret;
     }
 
-    static String getname(Context context, int id) {
+    public static void setRepoModId(Context context, int id, int modId) {
+        String json = PreferenceManager.getDefaultSharedPreferences(context).getString("repo_ids", "[]");
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            jsonArray.put(id, modId);
+            json = jsonArray.toString();
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putString("repo_ids", json).apply();
+        } catch (JSONException e) {
+            crashlytics.setCustomKey("json", json);
+            crashlytics.recordException(e);
+        }
+    }
+
+    public static String getModName(Context context, int id) {
         String json = PreferenceManager.getDefaultSharedPreferences(context).getString("names", "[]");
         String ret = context.getString(R.string.mod, id + 1);
         try {
@@ -266,7 +249,7 @@ public class UsefulThings {
         return ret;
     }
 
-    static void setname(Context context, int id, String name) {
+    public static void setModName(Context context, int id, String name) {
         String json = PreferenceManager.getDefaultSharedPreferences(context).getString("names", "[]");
         try {
             JSONArray jsonArray = new JSONArray(json);
@@ -279,7 +262,7 @@ public class UsefulThings {
         }
     }
 
-    static void removename(Context context, int id) {
+    static void clearModName(Context context, int id) {
         String json = PreferenceManager.getDefaultSharedPreferences(context).getString("names", "");
         try {
             JSONArray jsonArray = new JSONArray(json);
@@ -290,31 +273,6 @@ public class UsefulThings {
             crashlytics.setCustomKey("json", json);
             crashlytics.recordException(e);
         }
-    }
-
-    static int modcount(Context context) {
-        String d = context.getExternalFilesDir(null) + "/Mods";
-        File file = new File(d);
-        file.mkdirs();
-        int count = 0;
-        try {
-            for (File x : file.listFiles()) {
-                if (x.listFiles().length - 1 != -1) count++;
-            }
-        } catch (Exception e) {
-            count = 0;
-        }
-        return count;
-    }
-
-    public static File[] checkmod(Context context, int modn) {
-        modn--;
-        String d = context.getExternalFilesDir(null) + "/Mods/" + modn;
-        Log.d(TAG, d);
-        File[] mods = new File(d).listFiles();
-        if (mods != null)
-            Arrays.sort(mods, comp);
-        return mods;
     }
 
     public static void installAPK(File apkFile) {
@@ -329,6 +287,51 @@ public class UsefulThings {
         }
         ctx.startActivity(intent);
         showSnackBar(ctx.getString(R.string.success));
+    }
+
+    public static int modСount(Context context) {
+        String d = context.getExternalFilesDir(null) + "/Mods";
+        File file = new File(d);
+        file.mkdirs();
+        int count = 0;
+        try {
+            for (File x : file.listFiles()) {
+                if (x.listFiles().length - 1 != -1) count++;
+            }
+        } catch (Exception e) {
+            count = 0;
+        }
+        return count;
+    }
+
+    static String sudo(String cmd) {
+        output = new byte[256];
+        if (process == null) {
+            process = Runtime.getRuntime();
+        }
+        try {
+            new DataInputStream(process.exec(su + cmd).getInputStream()).readFully(output);
+            return new String(output);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    public static String trimFolderName(String s) {
+        String s1 = s.split("/csv_logic/")[0];
+        s1 = s1.split("/badge/")[0];
+        s1 = s1.split("/csv_client/")[0];
+        s1 = s1.split("/font/")[0];
+        s1 = s1.split("/image/")[0];
+        s1 = s1.split("/localization/")[0];
+        s1 = s1.split("/music/")[0];
+        s1 = s1.split("/sc/")[0];
+        s1 = s1.split("/sc3d/")[0];
+        s1 = s1.split("/sfx/")[0];
+        s1 = s1.split("/shader/")[0];
+        s1 = s1.split("/fingerprint.json")[0];
+        return s1.endsWith("/") ? (s1) : (s1 + "/");
     }
 
     public static class Signer extends AsyncTask<String, String, String> {
@@ -356,7 +359,7 @@ public class UsefulThings {
                         zout.putNextEntry(new ZipEntry(ze.getName()));
                         if (ze.getName().contains("assets/")) {
                             for (Object z : checked) {
-                                String x = z.getClass() == ListChild.class ? ((ListChild) z).getforcopy() : ((ListParent) z).getforcopy();
+                                String x = z.getClass() == ModListFile.class ? ((ModListFile) z).getforcopy() : ((ModListFolder) z).getforcopy();
                                 if (x.matches(ctx.getExternalFilesDir(null) + "/(\\d+)/" + ze.getName().replace("assets/", ""))) {
                                     FileInputStream fis = new FileInputStream(x);
                                     ZipEntry entry = new ZipEntry(x);
@@ -456,10 +459,10 @@ public class UsefulThings {
                         if (zip.getEntry("assets/fingerprint.json") != null) {//unapk
                             try {
                                 File file = new File(str);
-                                int b = checkmods(ctx).length;
+                                int b = listMods(ctx).length;
                                 ctx.getExternalFilesDir(null).mkdirs();
                                 ZipFile zipFile = new ZipFile(file);
-                                Enumeration entries = zipFile.entries();
+                                Enumeration<? extends ZipEntry> entries = zipFile.entries();
                                 ZipEntry zipEntry = zipFile.getEntry("assets/fingerprint.json");
                                 File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Temp/" + b + "/" + zipEntry.getName().replace("assets/", "")));
                                 file2.getParentFile().mkdirs();
@@ -483,11 +486,11 @@ public class UsefulThings {
                                 }
                                 while (entries.hasMoreElements()) {
                                     publishProgress("Searching for changed files");
-                                    zipEntry = (ZipEntry) entries.nextElement();
+                                    zipEntry = entries.nextElement();
                                     if (!zipEntry.getName().contains("assets/")) continue;
                                     file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace("assets/", "")));
                                     if (zipEntry.isDirectory()) continue;
-                                    if (zipEntry.getName().replace(trimsome(zipEntry.getName()), "").equals(zipEntry.getName()))
+                                    if (zipEntry.getName().replace(trimFolderName(zipEntry.getName()), "").equals(zipEntry.getName()))
                                         continue;
                                     if (zipEntry.getName().contains("fingerprint.json")) continue;
                                     bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
@@ -524,15 +527,15 @@ public class UsefulThings {
                     } else {        //unzipping
                         try {
                             File file = new File(str);
-                            int b = checkmods(ctx).length;
+                            int b = listMods(ctx).length;
                             new File(ctx.getExternalFilesDir(null).getAbsolutePath()).mkdirs();
                             ZipFile zipFile = new ZipFile(file);
-                            Enumeration entries = zipFile.entries();
+                            Enumeration<? extends ZipEntry> entries = zipFile.entries();
                             while (entries.hasMoreElements()) {
-                                ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+                                ZipEntry zipEntry = entries.nextElement();
                                 //Log.d(TAG, "ZE: " + zipEntry.getName());
                                 publishProgress(zipEntry.getName());
-                                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace(trimsome(zipEntry.getName()), "")));
+                                File file2 = new File((ctx.getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + b + "/" + zipEntry.getName().replace(trimFolderName(zipEntry.getName()), "")));
                                 file2.getParentFile().mkdirs();
                                 if (!zipEntry.isDirectory()) {
                                     Log.d(TAG, "Extracting " + file2);
@@ -573,22 +576,20 @@ public class UsefulThings {
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            ActivityPro.mTabsAdapter.notifyDataSetChanged();
-            pd.cancel();
-            super.onPostExecute(aVoid);
-        }
-
-        @Override
         protected void onCancelled() {
             super.onCancelled();
             pd.cancel();
         }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            HomeFragment.mTabsAdapter.notifyDataSetChanged();
+            pd.cancel();
+            super.onPostExecute(aVoid);
+        }
     }
 
-    static class Deploy extends AsyncTask<Void, String, String> {
-
-
+    public static class Deploy extends AsyncTask<Void, String, String> {
         ProgressDialog pd;
 
         @Override
@@ -606,22 +607,22 @@ public class UsefulThings {
         protected String doInBackground(Void... voids) {
             try {
                 for (Object o : checked) {
-                    if (o.getClass().equals(ListParent.class)) {
-                        ListParent x = (ListParent) o;
+                    if (o.getClass().equals(ModListFolder.class)) {
+                        ModListFolder x = (ModListFolder) o;
                         publishProgress(ctx.getString(R.string.installing) + x.getforcopy());
                         if (x.getTitle().equals("fingerprint.json")) {
                             sudo("mkdir -p " + (bspath + "update/" + x.getTitle()));
-                            copy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
+                            cmdCopy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
                             Log.d(TAG, "mkdir -p " + (bspath + "update/" + x.getTitle()));
                             Log.d(TAG, x.getPath().getAbsolutePath());
                         } else
                             Log.d(TAG, sudo("mkdir -p " + (bspath + "update/" + x.getforcopy())));
                         Log.d(TAG, x.getforcopy());
-                    } else if (o.getClass().equals(ListChild.class)) {
-                        ListChild x = (ListChild) o;
+                    } else if (o.getClass().equals(ModListFile.class)) {
+                        ModListFile x = (ModListFile) o;
                         publishProgress(ctx.getString(R.string.installing) + x.getforcopy());
                         sudo("mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
-                        copy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
+                        cmdCopy(x.getPath(), new File(bspath + "update/" + x.getforcopy()));
                         Log.d(TAG, "mkdir -p " + (bspath + "update/" + x.getforcopy().replace("/" + x.getOption1(), "/")));
                         Log.d(TAG, x.getPath().getAbsolutePath());
                         Log.d(TAG, bspath + x.getforcopy());
@@ -639,16 +640,16 @@ public class UsefulThings {
         }
 
         @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            pd.setMessage(values[0]);
+        }
+
+        @Override
         protected void onCancelled(String aVoid) {
             pd.dismiss();
             showSnackBar("Cancelled");
             super.onCancelled(aVoid);
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-            pd.setMessage(values[0]);
         }
 
         @Override
