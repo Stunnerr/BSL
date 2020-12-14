@@ -4,7 +4,7 @@
         <item name="colorAccent">@color/AccentColor</item>
     </style>
 
-    <style name="Material" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Material" parent="Theme.MaterialComponents.Light">
         <item name="colorAccent">@color/AccentColor</item>
         <item name="colorPrimary">@color/AccentColor</item>
         <item name="colorSecondary">#FFF</item>
@@ -12,18 +12,33 @@
         <item name="colorOnSecondary">@color/white</item>
     </style>
 
-    <style name="Material.DayNight" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Material.DayNight" parent="Theme.MaterialComponents.DayNight">
         <item name="colorAccent">@color/AccentColor</item>
-        <item name="colorOnSecondary">@color/white</item>
         <item name="colorPrimary">@color/AccentColor</item>
+        <item name="colorPrimaryDark">#ddd</item>
+        <item name="colorOnSecondary">@color/white</item>
         <item name="fontFamily">@font/roboto</item>
-        <item name="colorPrimaryDark">#006db3</item>
-        <item name="android:colorBackground">#FFF</item>
         <item name="iconPreferenceColor">#111</item>
+        <item name="toolbarStyle">@style/Toolbar</item>
+        <item name="appBarLayoutStyle">@style/Toolbar</item>
+        <item name="android:toolbarStyle">@style/Toolbar</item>
+        <item name="tabStyle">@style/TabLayout</item>
     </style>
-    <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout.Colored">
-    </style>
+
+    <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout"></style>
+
     <style name="Toolbar">
-        <item name="android:textColorSecondary">@color/white</item>
+        <item name="background">?android:colorBackground</item>
+        <item name="android:background">?android:colorBackground</item>
+        <item name="actionButtonStyle">@style/actionButton</item>
+        <item name="android:actionButtonStyle">@style/actionButton</item>
+        <item name="layout_scrollFlags">scroll|enterAlways|snap</item>
+        <item name="elevation">0dp</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <style name="actionButton">
+        <item name="android:height">?attr/actionBarSize</item>
+        <item name="android:width">?attr/actionBarSize</item>
     </style>
 </resources>

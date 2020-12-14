@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="stunner.moderstars">
+    package="com.stunner.moderstars">
+
     <application
         android:allowBackup="true"
         android:fullBackupContent="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
-        android:theme="@style/Material.DayNight"
-        tools:ignore="GoogleAppIndexingWarning"
-        tools:targetApi="29">
-        <activity android:name="com.stunner.moderstars.ModsRepo"></activity>
-        <activity android:name="com.stunner.moderstars.TabEditor">
-            <intent-filter>
-                <action android:name="com.stunner.moderstars.editor" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity android:name="com.stunner.moderstars.ActivityAbout" />
+        android:theme="@style/Material.DayNight">
+        <activity
+            android:name="com.stunner.moderstars.RedesignActivity"
+            android:label="@string/app_name" />
         <activity
             android:name="com.stunner.moderstars.Loading"
             android:clearTaskOnLaunch="true"
@@ -26,12 +19,9 @@
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.stunner.moderstars.ActivityPro" />
-        <activity android:name="com.stunner.moderstars.ActivitySettings" />
 
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
@@ -47,11 +37,12 @@
                 android:resource="@xml/provider_paths" />
         </provider>
     </application>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 </manifest>

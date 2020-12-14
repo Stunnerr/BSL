@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_home">
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.stunner.moderstars.ui.home.HomeFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/navigation_repo"
+        android:name="com.stunner.moderstars.ui.repo.RepoFragment"
+        android:label="@string/title_repo"
+        tools:layout="@layout/fragment_repo" />
+
+    <fragment
+        android:id="@+id/navigation_more"
+        android:name="com.stunner.moderstars.ui.more.SettingsFragment"
+        android:label="@string/title_more"
+        tools:layout="@layout/fragment_more" />
+</navigation>

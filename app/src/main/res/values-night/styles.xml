@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Material.DayNight" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Material.DayNight" parent="Theme.MaterialComponents.DayNight">
         <item name="colorAccent">@color/AccentColor</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorPrimary">@color/AccentColor</item>
         <item name="colorPrimaryDark">#121212</item>
         <item name="iconPreferenceColor">#fff</item>
+        <item name="android:textColorSecondary">@color/white</item>
+        <item name="toolbarStyle">@style/Toolbar</item>
+        <item name="tabStyle">@style/TabLayout</item>
     </style>
 
     <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout">
-        <item name="android:background">#282828</item>
+        <item name="android:backgroundTintMode">add</item>
+        <item name="android:backgroundTint">#000</item>
+        <item name="android:background">#121212</item>
     </style>
 
-    <style name="Toolbar" />
+    <style name="Toolbar" parent="Widget.MaterialComponents.Toolbar.PrimarySurface"></style>
 </resources>

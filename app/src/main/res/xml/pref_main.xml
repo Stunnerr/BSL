@@ -1,5 +1,4 @@
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.preference.DropDownPreference
         app:defaultValue="0"
         app:dialogTitle="@string/theme"
@@ -11,8 +10,11 @@
 
     <androidx.preference.Preference
         app:icon="@drawable/ic_edit"
-        app:summary="@string/tabsummary"
-        app:title="@string/tabeditor">
-        <intent android:action="com.stunner.moderstars.editor" />
-    </androidx.preference.Preference>
+        app:fragment="com.stunner.moderstars.ui.more.TabEditorFragment"
+        app:summary="@string/editordesc"
+        app:title="@string/tabeditor" />
+    <androidx.preference.Preference
+        app:fragment="com.stunner.moderstars.ui.more.AboutFragment"
+        app:icon="@drawable/ic_info"
+        app:title="@string/about_app" />
 </androidx.preference.PreferenceScreen>

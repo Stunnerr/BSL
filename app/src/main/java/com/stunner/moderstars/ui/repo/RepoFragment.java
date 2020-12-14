@@ -1,4 +1,4 @@
-package com.stunner.moderstars;
+package com.stunner.moderstars.ui.repo;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.BulletSpan;
@@ -27,6 +26,9 @@ import android.widget.Toast;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textview.MaterialTextView;
+import com.stunner.moderstars.DividerSpan;
+import com.stunner.moderstars.R;
+import com.stunner.moderstars.UsefulThings;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,14 +53,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import stunner.moderstars.R;
 
-public class ModsRepo extends AppCompatActivity {
+import static android.content.Context.DOWNLOAD_SERVICE;
+
+
+public class RepoFragment extends Fragment {
     ModList modList;
     SwipeRefreshLayout refreshLayout;
     SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
@@ -68,20 +73,12 @@ public class ModsRepo extends AppCompatActivity {
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.mods_repo);
-        refreshLayout = findViewById(R.id.root);
-        RecyclerView rv = findViewById(R.id.recyclerView);
-        modList = new ModList();
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_repo, container, false);
+        refreshLayout = root.findViewById(R.id.root);
+        RecyclerView rv = root.findViewById(R.id.recyclerView);
         rv.setAdapter(modList);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.mods_repo);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        rv.setLayoutManager(new LinearLayoutManager(getContext()));
         refreshLayout.setOnRefreshListener(refreshListener);
         refreshLayout.post(new Runnable() {
             @Override
@@ -90,12 +87,13 @@ public class ModsRepo extends AppCompatActivity {
                 refreshListener.onRefresh();
             }
         });
+        return root;
     }
 
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        modList = new ModList();
+        super.onCreate(savedInstanceState);
     }
 
     class Update extends AsyncTask<Void, Void, Boolean> {
@@ -154,9 +152,9 @@ public class ModsRepo extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean aVoid) {
             if (aVoid == null) {
-                Toast.makeText(getApplicationContext(), "An unexpected error occured", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "An unexpected error occured", Toast.LENGTH_LONG).show();
             } else if (!aVoid) {
-                Toast.makeText(getApplicationContext(), "Check your internet connection", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Check your internet connection", Toast.LENGTH_LONG).show();
             } else {
                 modList.setData(data, changelog);
                 modList.notifyDataSetChanged();
@@ -247,17 +245,17 @@ public class ModsRepo extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         dl.setEnabled(false);
-                        final int modnum = UsefulThings.fromrepo(getApplicationContext(), id) == -1 ? UsefulThings.modcount(getApplicationContext()) : UsefulThings.fromrepo(getApplicationContext(), id);
-                        DownloadManager downloadmanager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                        final int modnum = UsefulThings.getRepoModId(getContext(), id) == -1 ? UsefulThings.modСount(getContext()) : UsefulThings.getRepoModId(getContext(), id);
+                        DownloadManager downloadmanager = (DownloadManager) getActivity().getSystemService(DOWNLOAD_SERVICE);
                         Uri uri = Uri.parse(link);
                         final DownloadManager.Request request = new DownloadManager.Request(uri);
                         request.setTitle(text.getText());
                         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
                         request.setVisibleInDownloadsUi(false);
-                        request.setDestinationUri(Uri.parse("file://" + getExternalCacheDir() + "/TempMod.zip"));
+                        request.setDestinationUri(Uri.parse("file://" + getActivity().getExternalCacheDir() + "/TempMod.zip"));
                         downloadmanager.enqueue(request);
                         dl.setOnClickListener(null);
-                        registerReceiver(new BroadcastReceiver() {
+                        getActivity().registerReceiver(new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
                                 try {
@@ -268,13 +266,13 @@ public class ModsRepo extends AppCompatActivity {
                                             return name.contains("TempMod");
                                         }
                                     };
-                                    int count = getExternalCacheDir().list(ff).length;
-                                    String name = getExternalCacheDir() + "/TempMod" + (count > 1 ? "-" + (count - 1) : "") + ".zip";
+                                    int count = getActivity().getExternalCacheDir().list(ff).length;
+                                    String name = getActivity().getExternalCacheDir() + "/TempMod" + (count > 1 ? "-" + (count - 1) : "") + ".zip";
                                     ZipFile zf = new ZipFile(name);
                                     Enumeration entries = zf.entries();
                                     while (entries.hasMoreElements()) {
                                         ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                                        File file2 = new File(getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + modnum + "/" + zipEntry.getName().replace(UsefulThings.trimsome(zipEntry.getName()), ""));
+                                        File file2 = new File(getActivity().getExternalFilesDir(null).getAbsolutePath() + "/Mods/" + modnum + "/" + zipEntry.getName().replace(UsefulThings.trimFolderName(zipEntry.getName()), ""));
                                         file2.getParentFile().mkdirs();
                                         if (!zipEntry.isDirectory()) {
                                             BufferedInputStream bufferedInputStream = new BufferedInputStream(zf.getInputStream(zipEntry));
@@ -293,9 +291,9 @@ public class ModsRepo extends AppCompatActivity {
                                         }
                                     }
                                     new File(name).delete();
-                                    PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("repo" + id, changelog.get(0).get("version")).apply();
-                                    UsefulThings.setname(getApplicationContext(), modnum, text.getText().toString());
-                                    UsefulThings.setrepo(getApplicationContext(), modnum, id);
+                                    PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString("repo" + id, changelog.get(0).get("version")).apply();
+                                    UsefulThings.setModName(getContext(), modnum, text.getText().toString());
+                                    UsefulThings.setRepoModId(getContext(), modnum, id);
                                 } catch (Exception e) {
                                     UsefulThings.crashlytics.recordException(e);
                                 }
@@ -308,8 +306,8 @@ public class ModsRepo extends AppCompatActivity {
                 info.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        MaterialAlertDialogBuilder b = new MaterialAlertDialogBuilder(ModsRepo.this);
-                        LayoutInflater inflater = ModsRepo.this.getLayoutInflater();
+                        MaterialAlertDialogBuilder b = new MaterialAlertDialogBuilder(getView().getContext());
+                        LayoutInflater inflater = getLayoutInflater();
                         View layout = inflater.inflate(R.layout.repo_mod_info, null);
                         String d = getString(R.string.changelog);
                         int start = 0;
@@ -350,7 +348,7 @@ public class ModsRepo extends AppCompatActivity {
                 id = Integer.parseInt(map.get("id"));
                 changelog = clog;
 
-                if (PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("repo" + id, "").equals(clog.get(0).get("version"))) {
+                if (PreferenceManager.getDefaultSharedPreferences(getContext()).getString("repo" + id, "").equals(clog.get(0).get("version"))) {
                     dl.setVisibility(View.GONE);
                 }
             }
