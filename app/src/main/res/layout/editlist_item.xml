@@ -25,7 +25,6 @@
         android:layout_toStartOf="@id/delbtn"
         android:backgroundTint="?android:colorBackground"
         android:src="@drawable/ic_edit"
-
         />
 
     <androidx.appcompat.widget.AppCompatImageButton
