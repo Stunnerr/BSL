@@ -1,4 +1,4 @@
-package com.stunner.moderstars.pro.Adapters;
+package com.stunner.moderstars.modlist.adapters;
 
 
 import android.content.Context;
@@ -9,58 +9,57 @@ import android.view.ViewGroup;
 
 import com.bignerdranch.expandablerecyclerview.Adapter.ExpandableRecyclerAdapter;
 import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
+import com.stunner.moderstars.R;
 import com.stunner.moderstars.UsefulThings;
-import com.stunner.moderstars.pro.Models.ListChild;
-import com.stunner.moderstars.pro.Models.ListParent;
-import com.stunner.moderstars.pro.ViewHolders.ChildViewHolder;
-import com.stunner.moderstars.pro.ViewHolders.ParentViewHolder;
+import com.stunner.moderstars.modlist.models.ModListFile;
+import com.stunner.moderstars.modlist.models.ModListFolder;
+import com.stunner.moderstars.modlist.viewholders.FileViewHolder;
+import com.stunner.moderstars.modlist.viewholders.FolderViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import stunner.moderstars.R;
+public class ModListAdapter extends ExpandableRecyclerAdapter<FolderViewHolder, FileViewHolder> {
 
-public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHolder, ChildViewHolder> {
-
-    private static List<ListParent> parents = new ArrayList<>();
+    private static List<ModListFolder> parents = new ArrayList<>();
     private LayoutInflater inflater;
 
-    public RecyclerViewAdapter(Context context, List<ParentObject> parentItemList) {
+    public ModListAdapter(Context context, List<ParentObject> parentItemList) {
         super(context, parentItemList);
         inflater = LayoutInflater.from(context);
     }
 
     @Override
-    public ParentViewHolder onCreateParentViewHolder(ViewGroup viewGroup) {
+    public FolderViewHolder onCreateParentViewHolder(ViewGroup viewGroup) {
         View view = inflater.inflate(R.layout.list_parent, viewGroup, false);
-        return new ParentViewHolder(view);
+        return new FolderViewHolder(view);
     }
 
     @Override
-    public ChildViewHolder onCreateChildViewHolder(ViewGroup viewGroup) {
+    public FileViewHolder onCreateChildViewHolder(ViewGroup viewGroup) {
         View view = inflater.inflate(R.layout.list_child, viewGroup, false);
-        return new ChildViewHolder(view);
+        return new FileViewHolder(view);
 
     }
 
     @Override
-    public void onBindParentViewHolder(final ParentViewHolder holder, final int i, final Object o) {
-        final ListParent title = (ListParent) o;
+    public void onBindParentViewHolder(final FolderViewHolder holder, final int i, final Object o) {
+        final ModListFolder title = (ModListFolder) o;
         title.setCurholder(holder);
         parents.add(title);
         holder._textView.setText(title.getTitle());
         holder._checkBox.setChecked(UsefulThings.checked.indexOf(title) != -1);
-        if (((ListParent) o).getPath().isDirectory()) {
+        if (((ModListFolder) o).getPath().isDirectory()) {
             holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
-                                                     @Override
-                                                     public boolean onLongClick(View v) {
-                                                         if (UsefulThings.checked.indexOf(title) == -1) {
-                                                             holder._checkBox.setChecked(true);
-                                                             UsefulThings.checked.add(title);
-                                                             for (Object x : title.getChildObjectList()) {
-                                                                 ListChild child = (ListChild) x;
-                                                                 if (child.getCurholder() != null)
-                                                                     child.getCurholder().checkBox1.setChecked(true);
+                @Override
+                public boolean onLongClick(View v) {
+                    if (UsefulThings.checked.indexOf(title) == -1) {
+                        holder._checkBox.setChecked(true);
+                        UsefulThings.checked.add(title);
+                        for (Object x : title.getChildObjectList()) {
+                            ModListFile child = (ModListFile) x;
+                            if (child.getCurholder() != null)
+                                child.getCurholder().checkBox1.setChecked(true);
                                                                  UsefulThings.checked.add(child);
                                                              }
                                                          } else {
@@ -77,7 +76,7 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
                                                         if (UsefulThings.checked.indexOf(title) == -1) {
                                                             UsefulThings.checked.add(title);
                                                             for (Object x : title.getChildObjectList()) {
-                                                                ListChild child = (ListChild) x;
+                                                                ModListFile child = (ModListFile) x;
                                                                 if (child.getCurholder() != null)
                                                                     child.getCurholder().checkBox1.setChecked(true);
                                                                 UsefulThings.checked.add(child);
@@ -98,7 +97,7 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
                                                          holder._checkBox.setChecked(true);
                                                          UsefulThings.checked.add(title);
                                                          for (Object x : title.getChildObjectList()) {
-                                                             ListChild child = (ListChild) x;
+                                                             ModListFile child = (ModListFile) x;
                                                              if (child.getCurholder() != null)
                                                                  child.getCurholder().checkBox1.setChecked(true);
                                                              UsefulThings.checked.add(child);
@@ -116,11 +115,11 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
 
 
     @Override
-    public void onBindChildViewHolder(final ChildViewHolder holder, final int i, final Object o) {
-        final ListChild title = (ListChild) o;
+    public void onBindChildViewHolder(final FileViewHolder holder, final int i, final Object o) {
+        final ModListFile title = (ModListFile) o;
         final boolean[] d = {false};
-        final ListParent[] parent = {null};
-        for (ListParent x : parents) {
+        final ModListFolder[] parent = {null};
+        for (ModListFolder x : parents) {
             if (x.getChildObjectList().indexOf(title) != -1) {
                 parent[0] = x;
                 break;
@@ -136,7 +135,7 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
                     holder.checkBox1.setChecked(true);
                     UsefulThings.checked.add(title);
                     for (Object x : parent[0].getChildObjectList()) {
-                        ListChild child = (ListChild) x;
+                        ModListFile child = (ModListFile) x;
                         if (UsefulThings.checked.indexOf(child) != -1) d[0] = true;
                         else {
                             d[0] = false;
@@ -165,7 +164,7 @@ public class RecyclerViewAdapter extends ExpandableRecyclerAdapter<ParentViewHol
                 if (UsefulThings.checked.indexOf(title) == -1) {
                     UsefulThings.checked.add(title);
                     for (Object x : parent[0].getChildObjectList()) {
-                        ListChild child = (ListChild) x;
+                        ModListFile child = (ModListFile) x;
                         if (UsefulThings.checked.indexOf(child) != -1) d[0] = true;
                         else {
                             d[0] = false;

@@ -1,16 +1,17 @@
-package com.stunner.moderstars.pro.ViewHolders;
+package com.stunner.moderstars.modlist.viewholders;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import stunner.moderstars.R;
+import com.stunner.moderstars.R;
 
-public class ParentViewHolder extends com.bignerdranch.expandablerecyclerview.ViewHolder.ParentViewHolder {
+public class FolderViewHolder extends com.bignerdranch.expandablerecyclerview.ViewHolder.ParentViewHolder {
     public TextView _textView;
     public CheckBox _checkBox;
     public RelativeLayout layout;
-    public ParentViewHolder(View itemView) {
+
+    public FolderViewHolder(View itemView) {
         super(itemView);
         _textView = itemView.findViewById(R.id.parentTitle);
         _checkBox = itemView.findViewById(R.id.checkBox);
