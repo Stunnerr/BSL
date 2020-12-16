@@ -18,13 +18,16 @@ import com.google.android.material.snackbar.Snackbar;
 import com.stunner.moderstars.R;
 import com.stunner.moderstars.UsefulThings;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+@Keep
 public class TabEditorFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,6 +40,7 @@ public class TabEditorFragment extends PreferenceFragmentCompat {
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(new EditorAdapter());
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.tabeditor);
         return view;
     }
 
