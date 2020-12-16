@@ -127,20 +127,23 @@ public class RedesignActivity extends AppCompatActivity {
         navView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                getSupportActionBar().setTitle(item.getTitle());
                 showcheck = item.getItemId() == R.id.navigation_home;
                 switch (item.getItemId()) {
                     case R.id.navigation_home:
+                        getSupportActionBar().setTitle(R.string.app_name);
                         getSupportActionBar().setElevation(0);
+                        home = new HomeFragment();
                         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, home).commit();
                         active = home;
                         break;
                     case R.id.navigation_repo:
+                        getSupportActionBar().setTitle(R.string.title_repo);
                         getSupportActionBar().setElevation(elevation);
                         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, repo).commit();
                         active = repo;
                         break;
                     case R.id.navigation_more:
+                        getSupportActionBar().setTitle(R.string.title_more);
                         getSupportActionBar().setElevation(elevation);
                         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, more).commit();
                         active = more;
