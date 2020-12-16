@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -45,10 +43,6 @@ public class HomeFragment extends Fragment {
     static TabLayout mTabLayout;
     static ViewPager mViewPager;
     static FloatingActionButton fab;
-    static FragmentManager fragmentManager;
-    static int a = -10;
-    AlertDialog dialog;
-    int perms = 0;
     String[] supportedMimeTypes = {"application/zip", "application/vnd.android.package-archive"};
 
     private void choosezip() {
@@ -123,6 +117,7 @@ public class HomeFragment extends Fragment {
         fab = rootview.findViewById(R.id.fab);
         mViewPager = rootview.findViewById(R.id.viewpager);
         mTabLayout = rootview.findViewById(R.id.tabs);
+        mTabsAdapter = new TabsAdapter(getActivity().getSupportFragmentManager());
         mViewPager.setAdapter(mTabsAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
         mTabsAdapter.notifyDataSetChanged();
@@ -135,16 +130,9 @@ public class HomeFragment extends Fragment {
         return rootview;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        mTabsAdapter = new TabsAdapter(getActivity().getSupportFragmentManager());
-        super.onCreate(savedInstanceState);
-    }
-
     public static class TabsFragment extends Fragment {
         private static final String ARG_PAGE = "section_number";
         ModListAdapter adapter;
-        private int mPage;
 
         public TabsFragment() {
         }
@@ -187,7 +175,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
-            mPage = modСount(getContext());
+            int mPage = modСount(getContext());
             if (getArguments() != null) {
                 mPage = getArguments().getInt(ARG_PAGE);
             }
