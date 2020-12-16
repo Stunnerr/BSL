@@ -15,7 +15,8 @@
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 -keepattributes SourceFile,LineNumberTable
-
+-keep public class com.stunner.moderstars.ui.more.TabEditorFragment
+-keep public class com.stunner.moderstars.ui.more.AboutFragment
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
