@@ -12,6 +12,7 @@ import com.stunner.moderstars.UsefulThings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.DropDownPreference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -30,6 +31,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.title_more);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
